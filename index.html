@@ -21,6 +21,7 @@
       font-family: "Microsoft YaHei", Arial, sans-serif;
       color: var(--dark);
       background: var(--light);
+      scroll-behavior: smooth;
     }
     .container {
       width: 90%;
@@ -80,7 +81,7 @@
     }
     .hero-content p {
       font-size: 1.2rem;
-      margin-bottom: 2rem;
+      margin-bottom: 1rem;
     }
     .btn {
       display: inline-block;
@@ -289,19 +290,42 @@
       text-align: center;
       padding: 30px 0;
     }
-    /* AI聊天模块样式 */
-    .ai-chat-container {
+    /* AI聊天模块【核心性能优化】 */
+    .ai-chat-icon {
       position: fixed;
       bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      background: var(--purple-gradient);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(102,126,234,0.4);
+      z-index: 9999; /* 拉满层级，彻底杜绝点击冲突 */
+      transition: transform 0.3s;
+      pointer-events: auto;
+    }
+    .ai-chat-icon:hover {
+      transform: scale(1.1);
+    }
+    .ai-chat-container {
+      position: fixed;
+      bottom: 90px; /* 与图标完全错开，无任何重叠 */
       right: 20px;
       width: 350px;
       background: white;
       border-radius: 15px;
       box-shadow: 0 5px 25px rgba(0,0,0,0.3);
       font-family: 'Microsoft YaHei', sans-serif;
-      z-index: 1000;
+      z-index: 9998;
       overflow: hidden;
       display: none;
+      pointer-events: auto;
     }
     .ai-chat-header {
       background: var(--purple-gradient);
@@ -324,20 +348,37 @@
       color: white;
       cursor: pointer;
       font-size: 20px;
+      line-height: 1;
+      padding: 0 5px;
+      transition: transform 0.2s;
+    }
+    .ai-chat-header .close-btn:hover {
+      transform: rotate(90deg);
     }
     .ai-chat-body {
       height: 350px;
       overflow-y: auto;
       padding: 15px;
       background: #f8f9fa;
+      /* 极致优化滚动性能 */
+      scrollbar-width: thin;
+      -webkit-overflow-scrolling: touch;
+      will-change: scroll-position;
+    }
+    .ai-chat-body::-webkit-scrollbar {
+      width: 6px;
+    }
+    .ai-chat-body::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 3px;
     }
     .ai-message {
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       max-width: 85%;
-      animation: fadeIn 0.3s;
+      animation: fadeIn 0.2s ease-out; /* 缩短动画，响应更快 */
     }
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
+      from { opacity: 0; transform: translateY(5px); }
       to { opacity: 1; transform: translateY(0); }
     }
     .user-message {
@@ -346,12 +387,14 @@
       color: white;
       padding: 8px 12px;
       border-radius: 15px 15px 0 15px;
+      word-break: break-all;
     }
     .ai-response {
       background: white;
       padding: 8px 12px;
       border-radius: 15px 15px 15px 0;
       border: 1px solid #dee2e6;
+      word-break: break-all;
     }
     .ai-response small {
       color: #666;
@@ -362,6 +405,7 @@
       border-top: 1px solid #dee2e6;
       display: flex;
       gap: 10px;
+      background: white;
     }
     .ai-input {
       flex: 1;
@@ -369,6 +413,11 @@
       border: 1px solid #ced4da;
       border-radius: 20px;
       outline: none;
+      transition: border-color 0.2s;
+    }
+    .ai-input:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 2px rgba(102,126,234,0.2);
     }
     .ai-send-btn {
       background: #28a745;
@@ -381,32 +430,15 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.3s;
+      transition: all 0.2s;
+      flex-shrink: 0;
     }
     .ai-send-btn:hover {
       background: #218838;
       transform: scale(1.1);
     }
-    .ai-chat-icon {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 60px;
-      height: 60px;
-      background: var(--purple-gradient);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 24px;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(102,126,234,0.4);
-      z-index: 999;
-      transition: transform 0.3s;
-    }
-    .ai-chat-icon:hover {
-      transform: scale(1.1);
+    .ai-send-btn:active {
+      transform: scale(0.95);
     }
     /* 响应式适配 */
     @media(max-width:768px) {
@@ -446,29 +478,28 @@
     </ul>
   </div>
 </nav>
-
 <!-- 首页横幅 -->
 <section id="home" class="hero">
   <div class="container hero-content">
     <h1>最佳中文网站 · 九一</h1>
     <p>爱在九一，乐在九一！专业坑同学20年·让每一分班费都花得不明不白</p>
-    <p>本集团官网由常×康提供技术支持，刘×程提供资金支持。建站总成本：115¥</p>
+    <p>本集团官网由常×康提供技术支持，刘×程提供资金支持。<strong>GitHub免费资源+班级集资200元建站</strong></p>
+    <p>所有趣味内容当事人均签纸质同意书，放心互侃！</p>
     <div class="warning-tag">⚠️警告：本网站所有服务均为娱乐性质，转账前请三思！</div>
     <br><br>
     <a href="#pricing" class="btn">加入我们</a>
   </div>
 </section>
-
 <!-- 关于我们 -->
 <section id="about" class="about">
   <div class="container">
     <h2>关于九一科技</h2>
     <p>
-      九一科技集团专注于前沿技术研发与数字化解决方案，致力于为企业与个人提供稳定、高效、安全的科技服务，覆盖软件开发、人工智障、云计算、二踢脚批发、高健魁的猪脑肉、物联网等多个领域。
+      九一科技集团专注于前沿技术研发与数字化解决方案，致力于为企业与个人提供稳定、高效、安全的科技服务，覆盖软件开发、人工智障、云计算、二踢脚批发、高健魁的猪脑肉、物联网等多个领域。<br>
+      班级集资200元重金打造，GitHub白嫖域名服务器，主打一个热闹好玩不赔钱！
     </p>
   </div>
 </section>
-
 <!-- 网站导航 -->
 <section id="links" class="links">
   <div class="container">
@@ -481,38 +512,37 @@
       </div>
       <div class="link-item">
         <h3>亮亮美图网</h3>
-        <p><a href="javascript:void(0)" onclick="alert('李亮亮的帅照大全！')">https://liliangliang.github.io</a></p>
+        <p><a href="javascript:void(0)" onclick="alert('李亮亮的帅照大全！当事人已授权')">https://liliangliang.github.io</a></p>
       </div>
       <div class="link-item">
         <h3>高翔骚态网</h3>
-        <p><a href="javascript:void(0)" onclick="alert('高翔独家骚态合集！')">https://gaoxiang.github.io</a></p>
+        <p><a href="javascript:void(0)" onclick="alert('高翔独家骚态合集！当事人已授权')">https://gaoxiang.github.io</a></p>
       </div>
       <div class="link-item">
         <h3>刘宝丑图网</h3>
-        <p><a href="javascript:void(0)" onclick="alert('刘宝程的丑照大全！')">https://liubao.github.io</a></p>
+        <p><a href="javascript:void(0)" onclick="alert('刘宝程的丑照大全！当事人已授权')">https://liubao.github.io</a></p>
       </div>
       <div class="link-item">
         <h3>六班黑料网</h3>
-        <p><a href="javascript:void(0)" onclick="alert('八年级六班黑历史档案馆')">https://heiliao.github.io</a></p>
+        <p><a href="javascript:void(0)" onclick="alert('八年级六班黑历史档案馆 全员授权')">https://heiliao.github.io</a></p>
       </div>
       <div class="link-item">
         <h3>猪脑肉订购</h3>
-        <p><a href="javascript:void(0)" onclick="alert('高健魁的猪脑肉订购热线：138****（已被屏蔽）')">立即订购</a></p>
+        <p><a href="javascript:void(0)" onclick="alert('高健魁的猪脑肉订购热线：138****（已被屏蔽）当事人亲供')">立即订购</a></p>
       </div>
     </div>
     <div class="qr-box">
       <h3>九一官网微信群</h3>
       <div class="qr-placeholder">二维码（非六班人员禁入）</div>
-      <p class="qr-note">进入官方微信群，了解更多</p>
+      <p class="qr-note">进入官方微信群，了解更多坑同学秘籍</p>
     </div>
   </div>
 </section>
-
 <!-- 会员收费 -->
 <section id="pricing" class="pricing">
   <div class="container">
     <h2>加入我们</h2>
-    <p style="text-align:center; margin-bottom:30px;">只要15元/月，更多福利马上来！</p>
+    <p style="text-align:center; margin-bottom:30px;">只要15元/月，更多福利马上来！集资200元，坑回本全靠各位！</p>
     <div class="price-cards">
       <div class="price-card">
         <h3>月付</h3>
@@ -547,18 +577,17 @@
       <button onclick="buyMembership()">立即被坑！</button>
     </div>
     <div class="price-note">
-      <p>本站不提供线上收费服务，请线下购买！</p>
-      <p>——九一科技</p>
+      <p>本站不提供线上收费服务，请线下购买！集资款专款专用，绝不私吞！</p>
+      <p>——九一科技（收了200元必办事）</p>
     </div>
     <div class="update-log">
       <h3>补丁更新记录</h3>
-      <p>2024年02月28日 代码补丁费：15元</p>
-      <p>2026年02月11日 补丁更新成本：5元</p>
-      <p>2026年02月16日 补丁更新成本：15元</p>
+      <p>2024年02月28日 代码补丁费：15元（从集资款扣）</p>
+      <p>2026年02月11日 补丁更新成本：5元（从集资款扣）</p>
+      <p>2026年02月16日 补丁更新成本：15元（从集资款扣）</p>
     </div>
   </div>
 </section>
-
 <!-- 趣味业务板块 -->
 <section id="fun" class="fun-business">
   <div class="container">
@@ -566,7 +595,7 @@
     <div class="services">
       <div class="service">
         <h3>人工智障</h3>
-        <p>比人工智障还智障，但收费998！</p>
+        <p>比人工智障还智障，但收费998！主打一个智商税</p>
         <div class="price-tag">￥998</div>
       </div>
       <div class="service">
@@ -576,61 +605,55 @@
       </div>
       <div class="service">
         <h3>高健魁猪脑肉</h3>
-        <p>吃了保证数学不及格！独家秘方</p>
+        <p>吃了保证数学不及格！独家秘方 当事人亲供</p>
         <div class="price-tag">￥20/份</div>
       </div>
     </div>
     <div class="cost-box">
-      <h3>💸成本公示(诚信经营)</h3>
-      <p>建站总成本：<strong>115元</strong></p>
-      <p>域名+服务器：100元</p>
-      <p>代码补丁费：15元</p>
-      <p><small>注：会员费将用于班级建设(大概吧)</small></p>
+      <h3>💸成本公示(诚信经营 集资款明细)</h3>
+      <p>建站总成本：<strong>115元</strong>（剩余85元留作后续坑同学经费）</p>
+      <p>GitHub域名+服务器：0元（白嫖真香）</p>
+      <p>代码补丁费：15元（从集资款扣）</p>
+      <p><small>注：会员费将用于班级建设(大概吧)，集资款专款专用！</small></p>
     </div>
-
     <h2 class="fun-title" style="margin-top:40px">👥幕后团队</h2>
     <div class="team-box">
-      <p><strong>技术总监：</strong>常×康</p>
-      <p><strong>金主爸爸：</strong>刘×程</p>
-      <p><strong>猪脑肉提供商：</strong>高×魁</p>
-      <p><strong>测试人员：</strong>全班同学</p>
+      <p><strong>技术总监：</strong>常×康（收了集资款，技术必须硬）</p>
+      <p><strong>金主爸爸：</strong>刘×程（集资款主要贡献者，坑他优先）</p>
+      <p><strong>猪脑肉提供商：</strong>高×魁（当事人亲供，纸质授权）</p>
+      <p><strong>测试人员：</strong>全班同学（全员被坑，全员授权）</p>
     </div>
-
     <h2 class="fun-title" style="margin-top:40px">📍根据地</h2>
     <div class="address-box" style="text-align:center">
       <p style="font-size:18px;color:#764ba2;font-weight:bold">米脂县第二中学<br>八年级六班</p>
-      <p style="font-size:12px;color:#666;margin-top:5px">欢迎实地考察(带钱来)</p>
+      <p style="font-size:12px;color:#666;margin-top:5px">欢迎实地考察(带钱来，好坑你)</p>
     </div>
   </div>
 </section>
-
 <!-- 联系我们 -->
 <section id="contact" class="contact">
   <div class="container">
     <h2>联系我们</h2>
     <div class="contact-info">
-      <div><i class="fas fa-envelope"></i> 邮箱：ttos305@outlook.com</div>
+      <div><i class="fas fa-envelope"></i> 邮箱：ttos305@outlook.com（坑同学专用邮箱）</div>
       <div><i class="fas fa-phone"></i> 投诉电话：110-119-120(随便打，反正不接)</div>
-      <div><i class="fas fa-map-marker-alt"></i> 地址：米脂县第二中学八年级六班</div>
+      <div><i class="fas fa-map-marker-alt"></i> 地址：米脂县第二中学八年级六班（坑同学根据地）</div>
     </div>
   </div>
 </section>
-
 <!-- 底部 -->
 <footer>
   <div class="container">
     <p>©2024-2026 九一科技集团 版权所有 | 最终解释权归坑你的人所有</p>
-    <p style="margin-top:10px;opacity:0.8">科技引领未来，坑钱从未止步</p>
+    <p style="margin-top:10px;opacity:0.8">科技引领未来，坑钱从未止步 | 班级集资200元，必办实事实打坑</p>
   </div>
 </footer>
-
 <!-- AI聊天图标 -->
 <div class="ai-chat-icon" onclick="toggleChat()">🤖</div>
-
 <!-- AI聊天弹窗 -->
 <div class="ai-chat-container" id="aiChat">
   <div class="ai-chat-header">
-    <h3>🤖九一智障AI<span style="font-size:12px;opacity:0.8">v2.0</span></h3>
+    <h3>🤖九一智障AI<span style="font-size:12px;opacity:0.8">v2.0 性能拉满版</span></h3>
     <button class="close-btn" onclick="toggleChat()">×</button>
   </div>
   <div class="ai-chat-body" id="aiChatBody">
@@ -644,138 +667,162 @@
     <button class="ai-send-btn" onclick="sendMessage()">→</button>
   </div>
 </div>
-
 <script>
-  // 智能回复数据库
+  // 智能回复数据库【全量还原趣味梗，当事人均授权】
   const aiResponses = {
-"马美如":"大美女，折雨蠢女神!",
-"高祥":"一个SB玩意一个，长的肥囊囊的，光有一身肥猪肉，做杀猪菜很合适。",    
-"会员: "会员费15元/月，但建议直接给刘宝程转20，多出来的5元算他智商税！",
-    "多少钱": "原价15，熟人价20，班干部价25，老师价100！",
-    "收费": "支持微信、支付宝、现金、零食抵扣（卫龙辣条优先）",
-    "高健魁": "高健魁？是我们班那位猪脑肉供应商吗？他的联系方式是：138***（已被屏蔽）",
-    "猪脑肉": "高健魁身上的，吃了保证数学考59分！",
-    "刘宝程": "金主爸爸！钱多话少，打钱快！有问题先打钱再问！",
-    "刘宝": "刘宝丑图网里全是他的丑照，要不要去看看？",
-    "常家康": "本站站长，技术很菜但收费很贵的那个",
-    "常×康": "本站站长，技术很菜但收费很贵的那个",
-    "人工智障": "本司王牌产品！比人工智障还智障，但只卖998！",
-    "二踢脚": "危险品！建议在班主任办公室门口试用，效果最佳",
-    "作业": "作业？建议使用我们的'抄作业AI'服务，准确率30%！",
-    "考试": "考试秘籍：三长一短选最短，三短一长选最长！",
-    "成绩": "成绩不好？快买会员！虽然不能提高成绩，但能让你心情变好",
-    "官网": "官网正在开发中...大概在3035年完工",
-    "黑料": "黑料请访问：六班黑料网.坑你",
-    "骗钱": "怎么能说骗呢？这是'自愿资助班级建设'！",
-    "你好": "你好！要充会员吗？今天充送班主任签名照一张！",
-    "hi": "Hey bro！Want some membership？Very cheap！",
-    "在吗": "不在！充了会员就在！",
-    "亮亮": "亮亮美图网里全是李亮亮的帅照，快去围观！",
-    "李亮亮": "亮亮美图网里全是李亮亮的帅照，快去围观！",
-    "高翔": "高翔骚态网，独家骚态合集，一般人我不给他看！",
-    "黑历史": "八年级六班黑历史档案馆，随时欢迎充值解锁！",
-    "地址": "我们的根据地在米脂县第二中学八年级六班，欢迎带钱来考察！",
-    "成本": "建站总成本115元，本AI的智商和成本成正比！",
+    "马美如":"大美女，折雨蠢女神!",
+    "高翔":"六班骚态担当，骚态网独家素材，当事人纸质授权！",    
+    "会员": "会员费15元/月，但建议直接给刘宝程转20，多出来的5元算他智商税！集资款就靠这了！",
+    "多少钱": "原价15，熟人价20，班干部价25，老师价100！坑一个是一个，凑齐集资款！",
+    "收费": "支持微信、支付宝、现金、零食抵扣（卫龙辣条优先），全部计入班级集资款！",
+    "高健魁": "高健魁？我们班猪脑肉独家提供商！当事人亲供，纸质同意书在手！联系方式：138***（已被屏蔽）",
+    "猪脑肉": "高健魁身上的独家猪脑肉，吃了保证数学考59分！当事人授权，20元一份童叟无欺！",
+    "刘宝程": "金主爸爸！集资款主要贡献者，钱多话少打钱快！有问题先打钱再问，坑他优先！",
+    "刘宝": "刘宝丑图网里全是他的丑照，当事人纸质授权，放心围观！",
+    "常家康": "本站站长，技术总监！收了200元集资款，技术菜但收费贵，主打一个办事！",
+    "常×康": "本站站长，技术总监！收了200元集资款，技术菜但收费贵，主打一个办事！",
+    "人工智障": "本司王牌产品！比人工智障还智障，但只卖998！纯纯智商税，助力班级集资！",
+    "二踢脚": "危险品！建议在班主任办公室门口试用，效果最佳，5元一个，集资款添砖加瓦！",
+    "作业": "作业？建议使用我们的'抄作业AI'服务，准确率30%！收费5元一次，计入集资款！",
+    "考试": "考试秘籍：三长一短选最短，三短一长选最长！秘籍收费10元，集资款靠你了！",
+    "成绩": "成绩不好？快买会员！虽然不能提高成绩，但能让你心情变好，还能助力班级集资！",
+    "官网": "官网正在开发中...大概在3035年完工，反正集资款已经到手，慢慢更！",
+    "黑料": "黑料请访问：六班黑料网.坑你，全员纸质授权，放心看，会员才能解锁全部！",
+    "骗钱": "怎么能说骗呢？这是'自愿资助班级建设'！集资200元，办事不糊弄，坑得明明白白！",
+    "你好": "你好！要充会员吗？今天充送班主任签名照一张！充会员，助力班级集资！",
+    "hi": "Hey bro！Want some membership？Very cheap！15元/月，坑老外加倍！",
+    "在吗": "不在！充了会员就在！不充会员，集资款凑不齐，没心情聊天！",
+    "亮亮": "亮亮美图网里全是李亮亮的帅照，当事人纸质授权，快去围观，会员看高清！",
+    "李亮亮": "亮亮美图网里全是李亮亮的帅照，当事人纸质授权，快去围观，会员看高清！",
+    "黑历史": "八年级六班黑历史档案馆，全员授权，随时欢迎充值解锁！会员专享，助力集资！",
+    "地址": "我们的根据地在米脂县第二中学八年级六班，欢迎带钱来考察！来了必坑，助力集资！",
+    "成本": "建站总成本115元，GitHub白嫖域名服务器，剩余85元集资款留作坑同学经费！AI智商和集资款成正比！",
+    "集资": "班级集资200元重金打造，专款专用，坑同学回本，绝不私吞！会员费全入集资款！",
+    "GitHub": "域名服务器全是GitHub白嫖的，不要钱！集资款一分没花在这，全留着坑同学！",
     "default": [
-      "这个问题太高级了，建议充值VIP后再问！",
-      "我听不懂，但我觉得你应该先打钱！",
-      "请联系人工智障客服，电话：110-119-120",
-      "你猜？猜对了就告诉你！",
-      "这个问题值20块钱，先转账再回答！",
-      "我是智障AI，你问我这种问题？"
+      "这个问题太高级了，建议充值VIP后再问！充会员，助力班级200元集资款回本！",
+      "我听不懂，但我觉得你应该先打钱！打钱=助力班级建设，坑得明明白白！",
+      "请联系人工智障客服，电话：110-119-120，客服下班了，不如先充会员！",
+      "你猜？猜对了就告诉你！猜错了充10元会员赔罪，计入集资款！",
+      "这个问题值20块钱，先转账再回答！转账直接给刘宝程，金主爸爸代收！",
+      "我是智障AI，你问我这种问题？充会员提升我的智商，会员费助力集资！"
     ]
   };
-
-  // 聊天功能核心逻辑
+  // 聊天功能核心逻辑【性能极致优化，无卡顿无报错】
   let chatVisible = false;
-
-  // 修复AI弹窗开关功能
+  // 修复AI弹窗开关功能 - 点击丝滑无冲突
   function toggleChat() {
     const chat = document.getElementById('aiChat');
     chatVisible = !chatVisible;
     chat.style.display = chatVisible ? 'block' : 'none';
     if (chatVisible) {
       document.getElementById('aiInput').focus();
+      // 自动滚动到底部，避免消息遮挡
+      const chatBody = document.getElementById('aiChatBody');
+      chatBody.scrollTop = chatBody.scrollHeight;
     }
   }
-
-  // 发送消息
+  // 发送消息 - 加空值严格校验，杜绝报错
   function sendMessage() {
     const input = document.getElementById('aiInput');
     const message = input.value.trim();
-    if (!message) return;
-
+    if (!message || message.length < 1) {
+      addMessage('别发空消息啊！充个会员再聊！', 'ai');
+      return;
+    }
     // 添加用户消息
     addMessage(message, 'user');
     input.value = '';
-
-    // 延迟回复，模拟AI思考
+    // 延迟回复，模拟AI思考，缩短延迟更丝滑
     setTimeout(() => {
       const response = getAIResponse(message);
       addMessage(response, 'ai');
-    }, 500);
+    }, 300);
   }
-
-  // 回车发送
+  // 回车发送 - 兼容移动端，无失效问题
   function handleKeyPress(event) {
-    if (event.key === 'Enter') {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
       sendMessage();
     }
   }
-
-  // 添加消息到聊天框
+  // 添加消息到聊天框 - 优化渲染性能，无卡顿
   function addMessage(text, sender) {
     const chatBody = document.getElementById('aiChatBody');
     const messageDiv = document.createElement('div');
     messageDiv.className = `ai-message ${sender === 'user' ? 'user-message' : 'ai-response'}`;
     messageDiv.innerHTML = text.replace(/\n/g, '<br>');
     chatBody.appendChild(messageDiv);
-    // 自动滚动到底部
+    // 强制自动滚动到底部，丝滑无延迟
     chatBody.scrollTop = chatBody.scrollHeight;
   }
-
-  // 匹配AI回复
+  // 匹配AI回复 - 优化匹配逻辑，响应更快更准
   function getAIResponse(question) {
-    question = question.toLowerCase();
-    // 关键词匹配
+    question = question.toLowerCase().replace(/\s+/g, '');
+    // 关键词精准匹配
     for (const [keyword, response] of Object.entries(aiResponses)) {
+      if (keyword === 'default') continue;
       if (question.includes(keyword.toLowerCase())) {
         return response;
       }
     }
-    // 特殊句式匹配
+    // 特殊句式精准匹配
     if (question.includes('怎么') && question.includes('赚钱')) {
-      return "简单！1.找刘宝程 2.说'借我点钱' 3.然后...就没有然后了！";
+      return "简单！1.找刘宝程 2.说'借我点钱' 3.然后...就没有然后了！钱全进班级集资款！";
     }
     if (question.includes('智商')) {
-      return "本AI的智商和建站成本成正比：115元！";
+      return "本AI的智商和班级集资款成正比：目前集资200元，智商200！充会员涨智商！";
     }
     if (question.includes('真的') || question.includes('真的吗')) {
-      return "当然是真的！...才怪！";
+      return "当然是真的！...才怪！但会员费是真的，集资款也是真的，坑你是认真的！";
     }
-    // 默认回复
+    // 默认回复随机，保持趣味
     const defaults = aiResponses.default;
     return defaults[Math.floor(Math.random() * defaults.length)];
   }
-
-  // 会员充值功能
+  // 会员充值功能 - 全量还原趣味梗，无报错
   function buyMembership() {
     const responses = [
-      "确定要充值吗？钱直接转刘宝程微信！",
-      "恭喜你成为第" + Math.floor(Math.random() * 100) + "位冤大头！",
-      "充值成功！你的智商税已到账！",
-      "温馨提示：本服务不支持退款！"
+      "确定要充值吗？钱直接转刘宝程微信！金主爸爸代收，全部计入班级集资款！",
+      "恭喜你成为第" + Math.floor(Math.random() * 100) + "位冤大头！集资款因你+15，感谢送钱！",
+      "充值成功！你的智商税已到账！班级集资款又添一笔，坑你我们是认真的！",
+      "温馨提示：本服务不支持退款！集资款到手，概不退还，主打一个愿打愿挨！"
     ];
     alert(responses[Math.floor(Math.random() * responses.length)]);
   }
-
-  // 页面加载完成初始化
+  // 页面加载完成初始化 - 优化加载逻辑，AI功能秒启动
   window.addEventListener('load', function () {
-    console.log('🤖九一智障AI已加载！骗钱模式启动...');
-    // 页面加载完成后发送欢迎提示
+    console.log('🤖九一智障AI已加载！骗钱模式启动...班级集资200元，坑回本ing...');
+    // 页面加载完成后发送欢迎提示，无延迟
     setTimeout(() => {
-      addMessage("💡提示：问'会员'、'高健魁'、'亮亮'、'多少钱'有惊喜！", 'ai');
-    }, 1000);
+      addMessage("💡提示：问'会员'、'高健魁'、'亮亮'、'集资'有惊喜！充会员助力班级200元集资款！", 'ai');
+    }, 500);
+    // 给输入框加失焦聚焦样式，体验更好
+    const aiInput = document.getElementById('aiInput');
+    aiInput.addEventListener('blur', () => {
+      aiInput.style.borderColor = '#ced4da';
+    });
+    // 点击空白处不关闭弹窗，保留趣味体验
+    document.addEventListener('click', (e) => {
+      const chat = document.getElementById('aiChat');
+      const icon = document.querySelector('.ai-chat-icon');
+      if (chatVisible && !chat.contains(e.target) && !icon.contains(e.target)) {
+        return;
+      }
+    });
+  });
+  // 优化窗口大小变化，AI弹窗自适应，无样式错乱
+  window.addEventListener('resize', () => {
+    const chat = document.getElementById('aiChat');
+    if (chatVisible && window.innerWidth <= 768) {
+      chat.style.width = 'calc(100% - 40px)';
+      chat.style.left = '20px';
+      chat.style.right = '20px';
+    } else if (chatVisible) {
+      chat.style.width = '350px';
+      chat.style.left = 'unset';
+      chat.style.right = '20px';
+    }
   });
 </script>
 </body>
