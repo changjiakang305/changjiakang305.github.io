@@ -2,450 +2,361 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>打死高健魁 - 沙包解压小游戏</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>九一专属平台</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入图标 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
         }
-
-        body {
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            color: white;
-        }
-
-        .game-title {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin: 15px 0;
-            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            text-align: center;
-        }
-
-        .game-desc {
-            font-size: 1rem;
-            opacity: 0.9;
-            margin-bottom: 25px;
-            text-align: center;
-        }
-
-        .hp-container {
-            width: 90%;
-            max-width: 600px;
-            height: 35px;
-            background: rgba(0,0,0,0.5);
-            border-radius: 20px;
-            overflow: hidden;
-            margin-bottom: 20px;
-            border: 3px solid white;
-        }
-
-        .hp-bar {
+        html, body {
             height: 100%;
-            width: 100%;
-            background: linear-gradient(90deg, #ff4444, #00C851);
-            border-radius: 20px;
-            transition: width 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            padding-right: 15px;
-            font-weight: bold;
-        }
-
-        .stats-panel {
-            display: flex;
-            gap: 30px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: #ffbb33;
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-
-        .game-area {
-            width: 90%;
-            max-width: 500px;
-            aspect-ratio: 1/1;
-            background: rgba(255,255,255,0.1);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 20px 0;
-            position: relative;
             overflow: hidden;
-            border: 4px solid rgba(255,255,255,0.3);
+            background: #0f172a;
         }
-
-        #sandbag {
-            width: 60%;
-            cursor: pointer;
-            user-select: none;
-            transition: transform 0.1s ease;
-            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.4));
+        /* 抖音视频滑动容器 */
+        .video-container {
+            height: calc(100vh - 60px);
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scrollbar-width: none;
         }
-
-        #sandbag.hit {
-            transform: scale(0.9) rotate(5deg);
-        }
-
-        #sandbag.dizzy {
-            animation: shake 0.2s ease infinite;
-        }
-
-        @keyframes shake {
-            0% { transform: translateX(-5px); }
-            50% { transform: translateX(5px); }
-            100% { transform: translateX(-5px); }
-        }
-
-        .damage-text {
-            position: absolute;
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: #ff4444;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
-            pointer-events: none;
-            animation: floatUp 0.8s ease-out forwards;
-        }
-
-        @keyframes floatUp {
-            0% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-            100% {
-                opacity: 0;
-                transform: translateY(-80px);
-            }
-        }
-
-        .quote-text {
-            position: absolute;
-            top: 20px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: white;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-
-        .quote-text.show {
-            opacity: 1;
-            animation: bounce 0.3s ease;
-        }
-
-        @keyframes bounce {
-            0% { transform: scale(0.8); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 20px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .game-btn {
-            padding: 12px 30px;
-            border: none;
-            border-radius: 30px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-
-        .reset-btn {
-            background: #ff4444;
-            color: white;
-        }
-
-        .reset-btn:hover {
-            background: #cc0000;
-            transform: translateY(-2px);
-        }
-
-        .win-mask {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
+        .video-container::-webkit-scrollbar {
             display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 999;
         }
-
-        .win-card {
-            background: white;
-            color: #222;
-            padding: 40px;
-            border-radius: 20px;
-            text-align: center;
-            max-width: 90%;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            animation: popIn 0.4s ease;
+        .video-item {
+            height: calc(100vh - 60px);
+            scroll-snap-align: start;
+            position: relative;
+            background: #000;
         }
-
-        @keyframes popIn {
-            0% { transform: scale(0); }
-            80% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+        .video-item video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
-
-        .win-title {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: #ff4444;
-            margin-bottom: 15px;
+        /* 底部导航选中动画 */
+        .nav-item.active {
+            color: #f43f5e;
+            transform: scale(1.05);
         }
-
-        .win-desc {
-            font-size: 1.2rem;
-            margin-bottom: 25px;
+        /* 游戏卡片悬停效果 */
+        .game-card {
+            transition: all 0.3s ease;
+        }
+        .game-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(244, 63, 94, 0.4);
+        }
+        /* 标题呼吸动画 */
+        .title-breath {
+            animation: breath 2s infinite ease-in-out;
+        }
+        @keyframes breath {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        /* 加载动画 */
+        .loading-spin {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
-<body>
-    <h1 class="game-title">打死高健魁</h1>
-    <p class="game-desc">高健魁是你的专属沙包，疯狂点击它，把它揍扁！</p>
+<body class="text-white font-sans">
+    <!-- 页面主容器 -->
+    <div class="w-full h-full flex flex-col">
+        <!-- 顶部标题区（仅游戏页显示） -->
+        <header id="game-header" class="w-full px-4 py-6 text-center title-breath block">
+            <h1 class="text-3xl md:text-5xl font-bold text-rose-500 mb-2 leading-tight">
+                爱在九一，乐在九一
+            </h1>
+            <h2 class="text-2xl md:text-4xl font-bold text-amber-400 mb-3">
+                九一自创小游戏&视频平台
+            </h2>
+            <p class="text-lg md:text-xl font-semibold text-emerald-400 mb-1">
+                八六班专属
+            </p>
+            <p class="text-base md:text-lg font-medium text-white opacity-90">
+                谁不服为班级上交五十元，我贪污四十九块九毛九！！！！
+            </p>
+        </header>
 
-    <div class="hp-container">
-        <div id="hpBar" class="hp-bar">100% 血量</div>
-    </div>
+        <!-- 核心内容区 -->
+        <main class="flex-1 w-full overflow-hidden">
+            <!-- 游戏页面 -->
+            <section id="game-page" class="w-full h-full overflow-y-auto px-4 py-4 block">
+                <h3 class="text-2xl font-bold text-center text-blue-400 mb-6">
+                    <i class="fa-solid fa-gamepad mr-2"></i>班级小游戏合集
+                </h3>
+                <!-- 游戏加载状态 -->
+                <div id="game-loading" class="w-full py-20 text-center">
+                    <div class="loading-spin inline-block w-10 h-10 border-4 border-gray-600 border-t-rose-500 rounded-full mb-3"></div>
+                    <p class="text-gray-400">正在扫描游戏文件...</p>
+                </div>
+                <!-- 游戏空状态 -->
+                <div id="game-empty" class="w-full py-20 text-center hidden">
+                    <i class="fa-solid fa-folder-open text-5xl text-gray-600 mb-3"></i>
+                    <p class="text-gray-400">暂无游戏文件，请上传 index1.html、index2.html 到同一目录</p>
+                </div>
+                <!-- 游戏网格 -->
+                <div id="game-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 hidden"></div>
+            </section>
 
-    <div class="stats-panel">
-        <div class="stat-item">
-            <div id="score" class="stat-number">0</div>
-            <div class="stat-label">总伤害</div>
+            <!-- 视频页面（抖音风格） -->
+            <section id="video-page" class="w-full h-full hidden">
+                <!-- 视频滑动容器 -->
+                <div id="video-container" class="video-container">
+                    <!-- 视频加载状态 -->
+                    <div id="video-loading" class="w-full h-full flex flex-col items-center justify-center">
+                        <div class="loading-spin inline-block w-12 h-12 border-4 border-gray-600 border-t-rose-500 rounded-full mb-4"></div>
+                        <p class="text-gray-400">正在扫描视频文件...</p>
+                    </div>
+                    <!-- 视频空状态 -->
+                    <div id="video-empty" class="w-full h-full flex flex-col items-center justify-center hidden">
+                        <i class="fa-solid fa-video-slash text-5xl text-gray-600 mb-4"></i>
+                        <p class="text-gray-400">暂无视频文件，请上传 shipping1.mp4、shipping2.mp4 到同一目录</p>
+                    </div>
+                    <!-- 视频列表将通过JS自动生成 -->
+                </div>
+            </section>
+        </main>
+
+        <!-- 底部固定提示 -->
+        <div class="w-full text-center py-1 bg-slate-800 text-gray-300 text-sm">
+            看到这个网站除了L男其他的请别笑
         </div>
-        <div class="stat-item">
-            <div id="hitCount" class="stat-number">0</div>
-            <div class="stat-label">击打次数</div>
-        </div>
-        <div class="stat-item">
-            <div id="combo" class="stat-number">0</div>
-            <div class="stat-label">连击数</div>
-        </div>
-    </div>
 
-    <div class="game-area">
-        <div id="quoteText" class="quote-text"></div>
-        <img id="sandbag" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjUwMCIgdmlld0JveD0iMCAwIDQwMCA1MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgICA8IS0tIHRvcCByb3BlIC0tPgogICAgPHBhdGggZD0iTTE4MCAwIEwxODAgNDAgTDIyMCA0MCBMMjIwIDAiIGZpbGw9IiM0NDMzMjIiIHN0cm9rZT0iIzMzMjIxMSIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgICA8IS0tIHNvZnQgdG9wIC0tPgogICAgPGVsbGlwc2UgY3g9IjIwMCIgY3k9IjYwIiByeD0iOTAiIHJ5PSIzMCIgZmlsbD0iI2QzM2YzMyIgc3Ryb2tlPSIjYTIyYjJiIiBzdHJva2Utd2lkdGg9IjQiLz4KICAgIDwhLS0gbWFpbiBzYW5kYmFnIC0tPgogICAgPHJlY3QgeD0iMTEwIiB5PSI2MCIgd2lkdGg9IjE4MCIgaGVpZ2h0PSIzODAiIHJ4PSI5MCIgcnk9IjkwIiBmaWxsPSIjZDMzZjMzIiBzdHJva2U9IiNhMjJiMmIiIHN0cm9rZS13aWR0aD0iNCIvPgogICAgPCEtLSBzdGl0Y2hlcyAtLT4KICAgIDxsaW5lIHgxPSIxMTAiIHkxPSIxMjAiIHgyPSIyOTAiIHkyPSIxMjAiIHN0cm9rZT0iI2EyMmIyYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtZGFzaGFycmF5PSIxMCA1Ii8+CiAgICA8bGluZSB4MT0iMTEwIiB5MT0iMjAwIiB4Mj0iMjkwIiB5Mj0iMjAwIiBzdHJva2U9IiNhMjJiMmIiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWRhc2hhcnJheT0iMTAgNSIvPgogICAgPGxpbmUgeDE9IjExMCIgeTE9IjI4MCIgeDI9IjI5MCIgeTI9IjI4MCIgc3Ryb2tlPSIjYTIyYjJiIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1kYXNoYXJyYXk9IjEwIDUiLz4KICAgIDxsaW5lIHgxPSIxMTAiIHkxPSIzNjAiIHgyPSIyOTAiIHkyPSIzNjAiIHN0cm9rZT0iI2EyMmIyYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtZGFzaGFycmF5PSIxMCA1Ii8+CiAgICA8IS0tIGJvdHRvbSAtLT4KICAgIDxlbGxpcHNlIGN4PSIyMDAiIGN5PSI0NDAiIHJ4PSI5MCIgcnk9IjMwIiBmaWxsPSIjYTIyYjJiIiBzdHJva2U9IiM4YzE3MTciIHN0cm9rZS13aWR0aD0iNCIvPgogICAgPCEtLSBmYWNlIC0tPgogICAgPGNpcmNsZSBjeD0iMTYwIiBjeT0iMTgwIiByPSIxNSIgZmlsbD0iIzIyMiIvPgogICAgPGNpcmNsZSBjeD0iMjQwIiBjeT0iMTgwIiByPSIxNSIgZmlsbD0iIzIyMiIvPgogICAgPHBhdGggZD0iTTE2MCAyMzAgUTIwMCAyNjAgMjQwIDIzMCIgc3Ryb2tlPSIjMjIyIiBzdHJva2Utd2lkdGg9IjQiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4=" alt="高健魁沙包">
-    </div>
-
-    <div class="btn-group">
-        <button class="game-btn reset-btn" onclick="resetGame()">重置沙包</button>
-    </div>
-
-    <div id="winMask" class="win-mask">
-        <div class="win-card">
-            <h2 class="win-title">恭喜！</h2>
-            <p class="win-desc">你成功把沙包高健魁打扁了！</p>
-            <p id="winStats" style="margin-bottom: 25px; font-size: 1rem; color: #666;"></p>
-            <button class="game-btn reset-btn" onclick="resetGame()">再来一局</button>
-        </div>
+        <!-- 底部导航栏 -->
+        <nav class="w-full h-14 bg-slate-900 border-t border-slate-800 flex items-center justify-around">
+            <div id="nav-game" class="nav-item active flex flex-col items-center justify-center cursor-pointer w-full h-full">
+                <i class="fa-solid fa-gamepad text-xl mb-1"></i>
+                <span class="text-xs font-medium">游戏</span>
+            </div>
+            <div id="nav-video" class="nav-item flex flex-col items-center justify-center cursor-pointer w-full h-full">
+                <i class="fa-solid fa-video text-xl mb-1"></i>
+                <span class="text-xs font-medium">视频</span>
+            </div>
+        </nav>
     </div>
 
     <script>
-        // 游戏核心参数
-        let maxHp = 1000;
-        let currentHp = maxHp;
-        let score = 0;
-        let hitCount = 0;
-        let combo = 0;
-        let comboTimer = null;
-        const hitQuotes = [
-            "疼死了！",
-            "别打了别打了！",
-            "我就是个沙包啊！",
-            "你手不疼吗？",
-            "服了服了！",
-            "轻点轻点！",
-            "再打我要扁了！",
-            "有完没完啊！"
-        ];
+        // 全局配置
+        const CONFIG = {
+            maxGameCount: 100, // 最大扫描游戏数量
+            maxVideoCount: 100, // 最大扫描视频数量
+            gamePrefix: 'index', // 游戏文件前缀
+            gameSuffix: '.html', // 游戏文件后缀
+            videoPrefix: 'shipping', // 视频文件前缀
+            videoSuffix: '.mp4' // 视频文件后缀
+        };
 
-        // DOM元素
-        const hpBar = document.getElementById('hpBar');
-        const scoreEl = document.getElementById('score');
-        const hitCountEl = document.getElementById('hitCount');
-        const comboEl = document.getElementById('combo');
-        const sandbag = document.getElementById('sandbag');
-        const quoteText = document.getElementById('quoteText');
-        const winMask = document.getElementById('winMask');
-        const winStats = document.getElementById('winStats');
+        // 全局状态
+        let state = {
+            activeTab: 'game',
+            gameList: [],
+            videoList: [],
+            currentVideoIndex: 0,
+            isVideoPlaying: false
+        };
 
-        // 初始化
-        updateUI();
+        // 页面元素
+        const elements = {
+            gameHeader: document.getElementById('game-header'),
+            gamePage: document.getElementById('game-page'),
+            videoPage: document.getElementById('video-page'),
+            gameLoading: document.getElementById('game-loading'),
+            gameEmpty: document.getElementById('game-empty'),
+            gameGrid: document.getElementById('game-grid'),
+            videoContainer: document.getElementById('video-container'),
+            videoLoading: document.getElementById('video-loading'),
+            videoEmpty: document.getElementById('video-empty'),
+            navGame: document.getElementById('nav-game'),
+            navVideo: document.getElementById('nav-video')
+        };
 
-        // 沙包点击事件
-        sandbag.addEventListener('click', (e) => {
-            if (currentHp <= 0) return;
+        // 1. 自动扫描游戏文件
+        async function scanGameFiles() {
+            elements.gameLoading.classList.remove('hidden');
+            elements.gameGrid.classList.add('hidden');
+            elements.gameEmpty.classList.add('hidden');
+            state.gameList = [];
 
-            // 击打逻辑
-            hitCount++;
-            // 随机伤害 10-30，10%概率暴击
-            const isCrit = Math.random() < 0.1;
-            let damage = Math.floor(Math.random() * 20 + 10);
-            if (isCrit) damage *= 2;
-
-            // 扣血
-            currentHp = Math.max(0, currentHp - damage);
-            score += damage;
-
-            // 连击逻辑
-            combo++;
-            clearTimeout(comboTimer);
-            comboTimer = setTimeout(() => {
-                combo = 0;
-                comboEl.textContent = combo;
-            }, 1000);
-
-            // 击打动画
-            sandbag.classList.add('hit');
-            setTimeout(() => sandbag.classList.remove('hit'), 100);
-
-            // 伤害数字飘字
-            createDamageText(e.clientX, e.clientY, damage, isCrit);
-
-            // 随机挨打语录
-            if (Math.random() < 0.3) {
-                showQuote();
+            for (let i = 1; i <= CONFIG.maxGameCount; i++) {
+                const fileName = `${CONFIG.gamePrefix}${i}${CONFIG.gameSuffix}`;
+                try {
+                    const res = await fetch(fileName, { method: 'HEAD' });
+                    if (res.ok) {
+                        state.gameList.push({
+                            id: i,
+                            name: `游戏 ${i}`,
+                            url: fileName
+                        });
+                    } else {
+                        break; // 遇到404停止扫描
+                    }
+                } catch (e) {
+                    break; // 网络错误停止扫描
+                }
             }
 
-            // 血量低的时候晃起来
-            if (currentHp < maxHp * 0.3) {
-                sandbag.classList.add('dizzy');
-            }
-
-            // 更新UI
-            updateUI();
-
-            // 播放打击音效
-            playHitSound(isCrit);
-
-            // 手机震动
-            if (navigator.vibrate) {
-                navigator.vibrate(isCrit ? 100 : 50);
-            }
-
-            // 打死了
-            if (currentHp === 0) {
-                gameWin();
-            }
-        });
-
-        // 创建伤害飘字
-        function createDamageText(x, y, damage, isCrit) {
-            const text = document.createElement('div');
-            text.className = 'damage-text';
-            text.textContent = isCrit ? `暴击！${damage}` : damage;
-            text.style.left = `${x - 30}px`;
-            text.style.top = `${y - 20}px`;
-            if (isCrit) {
-                text.style.color = '#ffbb33';
-                text.style.fontSize = '2rem';
-            }
-            document.body.appendChild(text);
-            setTimeout(() => text.remove(), 800);
-        }
-
-        // 显示挨打语录
-        function showQuote() {
-            quoteText.textContent = hitQuotes[Math.floor(Math.random() * hitQuotes.length)];
-            quoteText.classList.add('show');
-            setTimeout(() => quoteText.classList.remove('show'), 1000);
-        }
-
-        // 更新UI
-        function updateUI() {
-            const hpPercent = Math.floor((currentHp / maxHp) * 100);
-            hpBar.style.width = `${hpPercent}%`;
-            hpBar.textContent = `${hpPercent}% 血量`;
-            scoreEl.textContent = score;
-            hitCountEl.textContent = hitCount;
-            comboEl.textContent = combo;
-        }
-
-        // 游戏胜利
-        function gameWin() {
-            clearTimeout(comboTimer);
-            sandbag.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjUwMCIgdmlld0JveD0iMCAwIDQwMCA1MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgICA8IS0tIGZsYXQgc2FuZGJhZyAtLT4KICAgIDxlbGxpcHNlIGN4PSIyMDAiIGN5PSIyNTAiIHJ4PSIxODAiIHJ5PSI2MCIgZmlsbD0iI2QzM2YzMyIgc3Ryb2tlPSIjYTIyYjJiIiBzdHJva2Utd2lkdGg9IjQiLz4KICAgIDwhLS0gc3RpdGNoZXMgLS0+CiAgICA8bGluZSB4MT0iNDAiIHkxPSIyMzAiIHgyPSIzNjAiIHkyPSIyMzAiIHN0cm9rZT0iI2EyMmIyYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtZGFzaGFycmF5PSIxMCA1Ii8+CiAgICA8bGluZSB4MT0iNDAiIHkxPSIyNzAiIHgyPSIzNjAiIHkyPSIyNzAiIHN0cm9rZT0iI2EyMmIyYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtZGFzaGFycmF5PSIxMCA1Ii8+CiAgICA8IS0tIGRlYWQgZmFjZSAtLT4KICAgIDxwYXRoIGQ9Ik0xNDAgMjMwIEwxNjAgMjUwIiBzdHJva2U9IiMyMjIiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICA8cGF0aCBkPSJNMTYwIDIzMCBMMTQwIDI1MCIgc3Ryb2tlPSIjMjIyIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogICAgPHBhdGggZD0iTTI0MCAyMzAgTDI2MCAyNTAiIHN0cm9rZT0iIzIyMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgIDxwYXRoIGQ9Ik0yNjAgMjMwIEwyNDAgMjUwIiBzdHJva2U9IiMyMjIiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICA8cGF0aCBkPSJNMTgwIDI3MCBRMjAwIDI4MCAyMjAgMjcwIiBzdHJva2U9IiMyMjIiIHN0cm9rZS13aWR0aD0iMyIgZmlsbD0ibm9uZSIgc3Ryb2tlLWRhc2hhcnJheT0iMyAzIi8+Cjwvc3ZnPg==";
-            winStats.textContent = `总伤害：${score} | 击打次数：${hitCount} | 最高连击：${combo}`;
-            winMask.style.display = 'flex';
-        }
-
-        // 重置游戏
-        function resetGame() {
-            currentHp = maxHp;
-            score = 0;
-            hitCount = 0;
-            combo = 0;
-            clearTimeout(comboTimer);
-            sandbag.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjUwMCIgdmlld0JveD0iMCAwIDQwMCA1MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgICA8IS0tIHRvcCByb3BlIC0tPgogICAgPHBhdGggZD0iTTE4MCAwIEwxODAgNDAgTDIyMCA0MCBMMjIwIDAiIGZpbGw9IiM0NDMzMjIiIHN0cm9rZT0iIzMzMjIxMSIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgICA8IS0tIHNvZnQgdG9wIC0tPgogICAgPGVsbGlwc2UgY3g9IjIwMCIgY3k9IjYwIiByeD0iOTAiIHJ5PSIzMCIgZmlsbD0iI2QzM2YzMyIgc3Ryb2tlPSIjYTIyYjJiIiBzdHJva2Utd2lkdGg9IjQiLz4KICAgIDwhLS0gbWFpbiBzYW5kYmFnIC0tPgogICAgPHJlY3QgeD0iMTEwIiB5PSI2MCIgd2lkdGg9IjE4MCIgaGVpZ2h0PSIzODAiIHJ4PSI5MCIgcnk9IjkwIiBmaWxsPSIjZDMzZjMzIiBzdHJva2U9IiNhMjJiMmIiIHN0cm9rZS13aWR0aD0iNCIvPgogICAgPCEtLSBzdGl0Y2hlcyAtLT4KICAgIDxsaW5lIHgxPSIxMTAiIHkxPSIxMjAiIHgyPSIyOTAiIHkyPSIxMjAiIHN0cm9rZT0iI2EyMmIyYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtZGFzaGFycmF5PSIxMCA1Ii8+CiAgICA8bGluZSB4MT0iMTEwIiB5MT0iMjAwIiB4Mj0iMjkwIiB5Mj0iMjAwIiBzdHJva2U9IiNhMjJiMmIiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWRhc2hhcnJheT0iMTAgNSIvPgogICAgPGxpbmUgeDE9IjExMCIgeTE9IjI4MCIgeDI9IjI5MCIgeTI9IjI4MCIgc3Ryb2tlPSIjYTIyYjJiIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1kYXNoYXJyYXk9IjEwIDUiLz4KICAgIDxsaW5lIHgxPSIxMTAiIHkxPSIzNjAiIHgyPSIyOTAiIHkyPSIzNjAiIHN0cm9rZT0iI2EyMmIyYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtZGFzaGFycmF5PSIxMCA1Ii8+CiAgICA8IS0tIGJvdHRvbSAtLT4KICAgIDxlbGxpcHNlIGN4PSIyMDAiIGN5PSI0NDAiIHJ4PSI5MCIgcnk9IjMwIiBmaWxsPSIjYTIyYjJiIiBzdHJva2U9IiM4YzE3MTciIHN0cm9rZS13aWR0aD0iNCIvPgogICAgPCEtLSBmYWNlIC0tPgogICAgPGNpcmNsZSBjeD0iMTYwIiBjeT0iMTgwIiByPSIxNSIgZmlsbD0iIzIyMiIvPgogICAgPGNpcmNsZSBjeD0iMjQwIiBjeT0iMTgwIiByPSIxNSIgZmlsbD0iIzIyMiIvPgogICAgPHBhdGggZD0iTTE2MCAyMzAgUTIwMCAyNjAgMjQwIDIzMCIgc3Ryb2tlPSIjMjIyIiBzdHJva2Utd2lkdGg9IjQiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4=";
-            sandbag.classList.remove('dizzy');
-            winMask.style.display = 'none';
-            updateUI();
-        }
-
-        // 打击音效（纯JS生成，不用外部文件）
-        function playHitSound(isCrit) {
-            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-
-            // 暴击音效和普通音效区分
-            if (isCrit) {
-                oscillator.type = 'sawtooth';
-                oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
-                oscillator.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.2);
-                gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
+            elements.gameLoading.classList.add('hidden');
+            if (state.gameList.length === 0) {
+                elements.gameEmpty.classList.remove('hidden');
             } else {
-                oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(150, audioCtx.currentTime);
-                oscillator.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.1);
-                gainNode.gain.setValueAtTime(0.7, audioCtx.currentTime);
+                renderGameList();
+                elements.gameGrid.classList.remove('hidden');
+            }
+        }
+
+        // 2. 渲染游戏列表
+        function renderGameList() {
+            elements.gameGrid.innerHTML = state.gameList.map(game => `
+                <a href="${game.url}" target="_blank" class="game-card bg-gradient-to-br from-rose-600 to-pink-700 rounded-xl p-6 text-center block">
+                    <i class="fa-solid fa-gamepad text-3xl mb-3"></i>
+                    <p class="text-xl font-bold">${game.name}</p>
+                </a>
+            `).join('');
+        }
+
+        // 3. 自动扫描视频文件
+        async function scanVideoFiles() {
+            elements.videoLoading.classList.remove('hidden');
+            elements.videoEmpty.classList.add('hidden');
+            state.videoList = [];
+
+            for (let i = 1; i <= CONFIG.maxVideoCount; i++) {
+                const fileName = `${CONFIG.videoPrefix}${i}${CONFIG.videoSuffix}`;
+                try {
+                    const res = await fetch(fileName, { method: 'HEAD' });
+                    if (res.ok) {
+                        state.videoList.push({
+                            id: i,
+                            url: fileName
+                        });
+                    } else {
+                        break; // 遇到404停止扫描
+                    }
+                } catch (e) {
+                    break; // 网络错误停止扫描
+                }
             }
 
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
-
-            oscillator.start();
-            oscillator.stop(audioCtx.currentTime + 0.2);
+            elements.videoLoading.classList.add('hidden');
+            if (state.videoList.length === 0) {
+                elements.videoEmpty.classList.remove('hidden');
+            } else {
+                renderVideoList();
+                initVideoEvent();
+            }
         }
+
+        // 4. 渲染视频列表
+        function renderVideoList() {
+            elements.videoContainer.innerHTML = state.videoList.map((video, index) => `
+                <div class="video-item" data-index="${index}">
+                    <video 
+                        src="${video.url}" 
+                        loop 
+                        muted 
+                        playsinline
+                        preload="metadata"
+                        class="video-player"
+                        data-index="${index}"
+                    ></video>
+                    <!-- 视频播放按钮 -->
+                    <div class="play-btn absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-black/30 rounded-full flex items-center justify-center hidden">
+                        <i class="fa-solid fa-play text-white text-3xl ml-1"></i>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 5. 初始化视频事件
+        function initVideoEvent() {
+            const videoPlayers = document.querySelectorAll('.video-player');
+            const playBtns = document.querySelectorAll('.play-btn');
+
+            // 视频点击播放/暂停
+            videoPlayers.forEach((video, index) => {
+                video.addEventListener('click', () => {
+                    if (video.paused) {
+                        video.play();
+                        playBtns[index].classList.add('hidden');
+                        state.isVideoPlaying = true;
+                    } else {
+                        video.pause();
+                        playBtns[index].classList.remove('hidden');
+                        state.isVideoPlaying = false;
+                    }
+                });
+            });
+
+            // 滑动切换视频
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const video = entry.target.querySelector('.video-player');
+                    const index = parseInt(entry.target.dataset.index);
+                    if (entry.isIntersecting) {
+                        state.currentVideoIndex = index;
+                        video.play().catch(() => {});
+                        playBtns[index].classList.add('hidden');
+                        state.isVideoPlaying = true;
+                    } else {
+                        video.pause();
+                        playBtns[index].classList.remove('hidden');
+                        state.isVideoPlaying = false;
+                    }
+                });
+            }, { threshold: 0.8 });
+
+            document.querySelectorAll('.video-item').forEach(item => {
+                observer.observe(item);
+            });
+        }
+
+        // 6. Tab切换功能
+        function switchTab(tabName) {
+            if (state.activeTab === tabName) return;
+
+            // 更新导航状态
+            if (tabName === 'game') {
+                elements.navGame.classList.add('active');
+                elements.navVideo.classList.remove('active');
+                elements.gamePage.classList.remove('hidden');
+                elements.videoPage.classList.add('hidden');
+                elements.gameHeader.classList.remove('hidden');
+            } else if (tabName === 'video') {
+                elements.navVideo.classList.add('active');
+                elements.navGame.classList.remove('active');
+                elements.videoPage.classList.remove('hidden');
+                elements.gamePage.classList.add('hidden');
+                elements.gameHeader.classList.add('hidden');
+                // 切换到视频页时扫描视频
+                if (state.videoList.length === 0) {
+                    scanVideoFiles();
+                }
+            }
+
+            state.activeTab = tabName;
+        }
+
+        // 7. 绑定导航点击事件
+        elements.navGame.addEventListener('click', () => switchTab('game'));
+        elements.navVideo.addEventListener('click', () => switchTab('video'));
+
+        // 8. 页面加载时扫描游戏
+        window.addEventListener('DOMContentLoaded', () => {
+            scanGameFiles();
+        });
     </script>
 </body>
 </html>

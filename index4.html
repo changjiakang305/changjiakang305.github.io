@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>狂扁猪头高健魁·修复版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "微软雅黑", Arial, sans-serif;
+        }
+        body {
+            background: #121212;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        /* 游戏主容器 - 教室场景 */
+        .game-box {
+            width: 95vw;
+            max-width: 900px;
+            height: 90vh;
+            max-height: 700px;
+            background: linear-gradient(to bottom, #87CEEB 0%, #f0f0f0 100%);
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        /* 可互动元素高亮样式 */
+        .interactive {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .interactive:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px #ff3333;
+        }
+        /* 教室黑板 - 加明显边框，确保可见 */
+        .blackboard {
+            width: 80%;
+            height: 35%;
+            background: #264d32;
+            position: absolute;
+            top: 5%;
+            left: 10%;
+            border: 10px solid #8B4513;
+            border-radius: 4px;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+        }
+        .blackboard-text {
+            color: #fff;
+            font-size: 24px;
+            text-align: center;
+            line-height: 150px;
+            user-select: none;
+        }
+        /* 讲台 - 加明显样式 */
+        .platform {
+            width: 30%;
+            height: 8%;
+            background: #8B4513;
+            position: absolute;
+            top: 41%;
+            left: 35%;
+            border-radius: 4px;
+            border: 4px solid #654321;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        /* 教室后门 - 加明显样式 */
+        .back-door {
+            width: 12%;
+            height: 40%;
+            background: #654321;
+            position: absolute;
+            top: 30%;
+            right: 2%;
+            border-radius: 4px;
+            border: 4px solid #4a3217;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        .door-window {
+            width: 80%;
+            height: 30%;
+            background: #add8e6;
+            margin: 10% auto 0;
+            border: 3px solid #333;
+        }
+        /* 课桌 - 加明显样式 */
+        .desk {
+            width: 300px;
+            height: 120px;
+            background: #deb887;
+            position: absolute;
+            bottom: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 8px;
+            border: 6px solid #8B4513;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+        /* 纯CSS绘制 猪头高健魁 - 彻底不用外部图片！ */
+        #boss {
+            width: 200px;
+            height: 220px;
+            position: absolute;
+            bottom: 22%;
+            left: 50%;
+            transform: translateX(-50%);
+            cursor: pointer;
+            transition: all 0.1s;
+            user-select: none;
+            z-index: 10;
+        }
+        /* 猪头主体 */
+        .pig-head {
+            width: 180px;
+            height: 180px;
+            background: #ffb6c1;
+            border-radius: 50%;
+            position: absolute;
+            top: 20px;
+            left: 10px;
+            border: 4px solid #000;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        /* 猪耳朵 */
+        .pig-ear {
+            width: 60px;
+            height: 80px;
+            background: #ffb6c1;
+            border: 4px solid #000;
+            border-radius: 50% 50% 0 0;
+            position: absolute;
+            top: 0;
+        }
+        .ear-left { left: 0; transform: rotate(-20deg); }
+        .ear-right { right: 0; transform: rotate(20deg); }
+        .ear-inner {
+            width: 30px;
+            height: 40px;
+            background: #ff8fa3;
+            border-radius: 50% 50% 0 0;
+            position: absolute;
+            top: 15px;
+            left: 10px;
+        }
+        /* 猪眼睛 */
+        .pig-eye {
+            width: 20px;
+            height: 20px;
+            background: #000;
+            border-radius: 50%;
+            position: absolute;
+            top: 60px;
+            animation: eyeBlink 3s infinite;
+        }
+        .eye-left { left: 40px; }
+        .eye-right { right: 40px; }
+        @keyframes eyeBlink {
+            0%, 95%, 100% { height: 20px; }
+            97% { height: 2px; }
+        }
+        /* 猪鼻子 */
+        .pig-nose {
+            width: 80px;
+            height: 60px;
+            background: #ff8fa3;
+            border: 4px solid #000;
+            border-radius: 50%;
+            position: absolute;
+            top: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .nose-hole {
+            width: 15px;
+            height: 20px;
+            background: #000;
+            border-radius: 50%;
+            position: absolute;
+            top: 15px;
+        }
+        .nose-left { left: 15px; }
+        .nose-right { right: 15px; }
+        /* 猪嘴 */
+        .pig-mouth {
+            width: 60px;
+            height: 20px;
+            border-bottom: 4px solid #000;
+            border-radius: 0 0 50% 50%;
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        /* 睡觉zzz */
+        .sleep-zzz {
+            position: absolute;
+            top: -30px;
+            right: -20px;
+            color: #333;
+            font-size: 20px;
+            font-weight: bold;
+            animation: zzzFloat 2s infinite;
+            opacity: 0;
+        }
+        @keyframes zzzFloat {
+            0% { transform: translateY(0); opacity: 0; }
+            50% { transform: translateY(-10px); opacity: 1; }
+            100% { transform: translateY(-20px); opacity: 0; }
+        }
+        /* 受伤动画 */
+        .boss-hurt {
+            transform: translateX(-50%) scale(0.9) rotate(-5deg) !important;
+            filter: brightness(0.6);
+        }
+        .boss-hurt .pig-mouth {
+            border-bottom: none;
+            border-top: 4px solid #000;
+        }
+        /* 睡觉动画 */
+        .boss-sleep {
+            transform: translateX(-50%) translateY(5px) !important;
+        }
+        /* 血条 */
+        .hp-container {
+            width: 90%;
+            height: 32px;
+            background: #444;
+            position: absolute;
+            top: 15px;
+            left: 5%;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 3px solid #000;
+        }
+        #hp-bar {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(to right, #ff3333, #ff6666);
+            transition: width 0.2s ease;
+        }
+        .hp-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            line-height: 28px;
+            color: #fff;
+            font-weight: bold;
+            text-shadow: 0 0 2px #000;
+            font-size: 18px;
+        }
+        /* 能量条 */
+        .energy-container {
+            width: 70%;
+            height: 20px;
+            background: #333;
+            position: absolute;
+            top: 55px;
+            left: 15%;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #000;
+        }
+        #energy-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, #0066ff, #00ccff);
+            transition: width 0.2s ease;
+        }
+        /* 连击提示 */
+        #combo-text {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 32px;
+            color: #fffc00;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.2s;
+            text-shadow: 0 0 4px #000;
+        }
+        /* 点击次数提示 */
+        #click-tip {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.85);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 16px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 998;
+        }
+        /* 彩蛋解锁全屏提示 */
+        #egg-unlock-tip {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(45deg, #ff0000, #ffcc00);
+            color: #fff;
+            padding: 30px 60px;
+            border-radius: 20px;
+            font-size: 36px;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 0 30px #ffcc00;
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 9999;
+            animation: eggBlink 0.5s infinite alternate;
+            border: 4px solid #000;
+        }
+        @keyframes eggBlink {
+            from { box-shadow: 0 0 30px #ffcc00; }
+            to { box-shadow: 0 0 60px #ffff00; }
+        }
+        /* 按钮 */
+        .btn {
+            padding: 12px 28px;
+            background: #ff4444;
+            color: #fff;
+            border: 3px solid #000;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            background: #ff2222;
+            transform: translateX(-50%) scale(1.05);
+        }
+        #skill-btn {
+            left: 80%;
+            display: none;
+            background: #0066ff;
+        }
+        #skill-btn:hover {
+            background: #0044cc;
+        }
+        #book-btn {
+            left: 20%;
+            background: #22aa22;
+        }
+        #book-btn:hover {
+            background: #118811;
+        }
+        #guide-btn {
+            left: 5%;
+            background: #aa6600;
+        }
+        #guide-btn:hover {
+            background: #884400;
+        }
+        /* 垃圾桶 - 加明显样式 */
+        .trash {
+            width: 60px;
+            height: 80px;
+            background: #333;
+            position: absolute;
+            bottom: 15%;
+            left: 5%;
+            border-radius: 4px;
+            border: 3px solid #000;
+        }
+        /* 时钟 - 加明显样式 */
+        .clock {
+            width: 60px;
+            height: 60px;
+            background: #fff;
+            border: 4px solid #000;
+            border-radius: 50%;
+            position: absolute;
+            top: 10px;
+            right: 5%;
+        }
+        .clock-hand {
+            width: 2px;
+            height: 20px;
+            background: #000;
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform-origin: bottom center;
+            animation: clockRotate 10s linear infinite;
+        }
+        @keyframes clockRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        /* 开始界面 */
+        #start-menu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #2c3e50, #34495e);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+        }
+        #start-title {
+            font-size: 52px;
+            color: #fff;
+            text-shadow: 0 0 15px #ff3333;
+            user-select: none;
+            cursor: pointer;
+            text-align: center;
+        }
+        /* 开始界面小纯CSS猪头 */
+        .start-pig {
+            width: 150px;
+            height: 150px;
+            position: relative;
+        }
+        #start-btn {
+            padding: 18px 50px;
+            font-size: 28px;
+            background: #ff4444;
+            color: #fff;
+            border: 4px solid #000;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        #start-btn:hover {
+            background: #ff2222;
+            transform: scale(1.05);
+        }
+        .egg-progress {
+            color: #fff;
+            font-size: 18px;
+        }
+        .key-tip {
+            color: #aaa;
+            font-size: 14px;
+            text-align: center;
+        }
+        /* 结束界面 */
+        #end-menu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+        #end-title {
+            font-size: 48px;
+            color: #ff3333;
+            text-align: center;
+        }
+        /* 彩蛋图鉴 */
+        #egg-book {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 1001;
+            display: none;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        .egg-item {
+            padding: 15px;
+            margin: 10px 0;
+            background: #222;
+            border-radius: 8px;
+            color: #fff;
+            border-left: 5px solid #666;
+            border: 2px solid #000;
+        }
+        .egg-unlock {
+            border-left: 5px solid #0f0;
+            color: #0f0;
+        }
+        .egg-lock {
+            border-left: 5px solid #666;
+            color: #aaa;
+        }
+        #close-book {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #ff4444;
+            color: #fff;
+            border: 3px solid #000;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        /* 彩蛋指引高亮 */
+        .guide-highlight {
+            animation: guideBlink 0.5s infinite alternate;
+        }
+        @keyframes guideBlink {
+            from { box-shadow: 0 0 20px #ffff00; }
+            to { box-shadow: 0 0 40px #ff0000; }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-box">
+        <!-- 开始界面 -->
+        <div id="start-menu">
+            <div class="start-pig">
+                <div class="pig-head">
+                    <div class="pig-ear ear-left"><div class="ear-inner"></div></div>
+                    <div class="pig-ear ear-right"><div class="ear-inner"></div></div>
+                    <div class="pig-eye eye-left"></div>
+                    <div class="pig-eye eye-right"></div>
+                    <div class="pig-nose">
+                        <div class="nose-hole nose-left"></div>
+                        <div class="nose-hole nose-right"></div>
+                    </div>
+                    <div class="pig-mouth"></div>
+                </div>
+            </div>
+            <h1 id="start-title">狂扁猪头高健魁</h1>
+            <div class="egg-progress" id="egg-progress">已解锁彩蛋：0/30</div>
+            <button id="start-btn">开始揍猪</button>
+            <p class="key-tip">彩蛋指引：所有鼠标放上去变红框的地方都能点！<br>键盘输入拼音首字母可触发专属彩蛋</p>
+        </div>
+
+        <!-- 结束界面 -->
+        <div id="end-menu">
+            <div class="start-pig">
+                <div class="pig-head" style="filter: grayscale(1);">
+                    <div class="pig-ear ear-left"><div class="ear-inner"></div></div>
+                    <div class="pig-ear ear-right"><div class="ear-inner"></div></div>
+                    <div class="pig-eye eye-left"></div>
+                    <div class="pig-eye eye-right"></div>
+                    <div class="pig-nose">
+                        <div class="nose-hole nose-left"></div>
+                        <div class="nose-hole nose-right"></div>
+                    </div>
+                    <div class="pig-mouth"></div>
+                </div>
+            </div>
+            <h1 id="end-title">猪头高健魁被你揍趴下了！</h1>
+            <p id="end-desc" style="color: #fff; font-size: 18px;"></p>
+            <button class="btn" id="restart-btn">再来一局</button>
+        </div>
+
+        <!-- 彩蛋图鉴 -->
+        <div id="egg-book">
+            <button id="close-book">关闭图鉴</button>
+            <h2 style="color: #fff; text-align: center; margin-bottom: 20px;">彩蛋图鉴</h2>
+            <div id="egg-list"></div>
+        </div>
+
+        <!-- 教室场景元素（全加了interactive类，hover高亮提示可点击） -->
+        <div class="blackboard interactive" id="blackboard">
+            <div class="blackboard-text">高中数学 必修五</div>
+        </div>
+        <div class="platform interactive" id="platform"></div>
+        <div class="back-door interactive" id="back-door">
+            <div class="door-window interactive" id="door-window"></div>
+        </div>
+        <div class="desk interactive" id="desk"></div>
+        <div class="trash interactive" id="trash"></div>
+        <div class="clock interactive" id="clock">
+            <div class="clock-hand"></div>
+        </div>
+
+        <!-- 状态条 -->
+        <div class="hp-container">
+            <div id="hp-bar"></div>
+            <div class="hp-text">猪头高健魁血量：100%</div>
+        </div>
+        <div class="energy-container">
+            <div id="energy-bar"></div>
+        </div>
+        <div id="combo-text">×0 连击！</div>
+        <div id="click-tip"></div>
+        <div id="egg-unlock-tip"></div>
+
+        <!-- BOSS 纯CSS猪头高健魁 -->
+        <div id="boss" class="interactive">
+            <div class="pig-head">
+                <div class="pig-ear ear-left"><div class="ear-inner"></div></div>
+                <div class="pig-ear ear-right"><div class="ear-inner"></div></div>
+                <div class="pig-eye eye-left"></div>
+                <div class="pig-eye eye-right"></div>
+                <div class="pig-nose">
+                    <div class="nose-hole nose-left"></div>
+                    <div class="nose-hole nose-right"></div>
+                </div>
+                <div class="pig-mouth"></div>
+            </div>
+            <div class="sleep-zzz" id="zzz">zzz</div>
+        </div>
+
+        <!-- 按钮 -->
+        <button class="btn" id="skill-btn">班主任制裁</button>
+        <button class="btn" id="book-btn">彩蛋图鉴</button>
+        <button class="btn" id="guide-btn">彩蛋指引</button>
+    </div>
+
+    <script>
+        // 游戏核心数据
+        const gameData = {
+            bossHp: 100,
+            maxHp: 100,
+            energy: 0,
+            maxEnergy: 100,
+            combo: 0,
+            comboTimer: null,
+            isGameStart: false,
+            isGameOver: false,
+            isGodMode: false,
+            unlockEggs: JSON.parse(localStorage.getItem('pig_gjk_eggs') || '[]'),
+            eggCount: 30,
+            thisGameEggs: 0,
+            isPeace: true,
+            // 彩蛋列表（全给明确触发方式）
+            eggList: [
+                { id: 1, name: "标题迫害者", desc: "连续点击开始界面的「狂扁猪头高健魁」标题3次解锁", unlock: false },
+                { id: 2, name: "班主任警告", desc: "鼠标悬停「开始揍猪」按钮5秒解锁", unlock: false },
+                { id: 3, name: "黑板擦偷袭", desc: "连续点击教室黑板3次解锁", unlock: false },
+                { id: 4, name: "讲台暴击", desc: "连续点击讲台5次解锁", unlock: false },
+                { id: 5, name: "后门查岗", desc: "连续点击后门窗户3次解锁", unlock: false },
+                { id: 6, name: "垃圾桶爆头", desc: "连续点击垃圾桶3次解锁", unlock: false },
+                { id: 7, name: "下课铃狂喜", desc: "连续点击时钟5次解锁", unlock: false },
+                { id: 8, name: "课桌掀翻", desc: "连续点击高健魁面前的课桌5次解锁", unlock: false },
+                { id: 9, name: "罚抄手速王", desc: "1秒内点击猪头5次解锁", unlock: false },
+                { id: 10, name: "连击狂魔", desc: "打出20连击不中断解锁", unlock: false },
+                { id: 11, name: "猪鼻子暴击", desc: "连续点击猪头的鼻子5次解锁", unlock: false },
+                { id: 12, name: "猪耳朵嘲讽", desc: "连续点击猪头的耳朵3次解锁", unlock: false },
+                { id: 13, name: "睡觉被抓", desc: "猪头打呼噜时点击它的嘴3次解锁", unlock: false },
+                { id: 14, name: "和平摸鱼人", desc: "进游戏后1分钟不点击猪头解锁", unlock: false },
+                { id: 15, name: "饶猪一命", desc: "猪头血量低于10%时，停止攻击5秒解锁", unlock: false },
+                { id: 16, name: "丝血逆袭", desc: "血量剩1%时坚持3秒不被打死解锁", unlock: false },
+                { id: 17, name: "空大嘲讽", desc: "能量满了之后，连续点击能量条3次解锁", unlock: false },
+                { id: 18, name: "班主任来了", desc: "游戏内按键盘「BZRL」四个字母解锁", unlock: false },
+                { id: 19, name: "作业没写暴击", desc: "游戏内按键盘「ZYMX」四个字母解锁", unlock: false },
+                { id: 20, name: "篮球舞罚站", desc: "游戏内按键盘「JNTM」四个字母解锁", unlock: false },
+                { id: 21, name: "干饭人奥利给", desc: "游戏内按键盘「OLG」三个字母解锁", unlock: false },
+                { id: 22, name: "退退退大法", desc: "游戏内按键盘「TTT」三个字母解锁", unlock: false },
+                { id: 23, name: "上帝模式", desc: "开始界面按顺序按「上上下下左右左右BABA」解锁", unlock: false },
+                { id: 24, name: "终极和平结局", desc: "同时解锁「和平摸鱼人」和「饶猪一命」后通关解锁", unlock: false },
+                { id: 25, name: "迫害之王", desc: "单局游戏内解锁10个以上彩蛋通关解锁", unlock: false },
+                { id: 26, name: "图鉴收藏家", desc: "累计解锁20个以上彩蛋解锁", unlock: false },
+                { id: 27, name: "全屏秒杀", desc: "游戏内连续点击屏幕四个角落各2次解锁", unlock: false },
+                { id: 28, name: "猪叫狂欢", desc: "单局内让猪头发出10次猪叫解锁", unlock: false },
+                { id: 29, name: "逃课大师", desc: "连续点击「彩蛋指引」按钮5次解锁", unlock: false },
+                { id: 30, name: "全图鉴大佬", desc: "解锁全部29个彩蛋后自动解锁", unlock: false },
+            ]
+        };
+
+        // DOM元素
+        const dom = {
+            startMenu: document.getElementById('start-menu'),
+            startBtn: document.getElementById('start-btn'),
+            startTitle: document.getElementById('start-title'),
+            eggProgress: document.getElementById('egg-progress'),
+            endMenu: document.getElementById('end-menu'),
+            endTitle: document.getElementById('end-title'),
+            endDesc: document.getElementById('end-desc'),
+            restartBtn: document.getElementById('restart-btn'),
+            boss: document.getElementById('boss'),
+            zzz: document.getElementById('zzz'),
+            hpBar: document.getElementById('hp-bar'),
+            hpText: document.querySelector('.hp-text'),
+            energyBar: document.getElementById('energy-bar'),
+            comboText: document.getElementById('combo-text'),
+            clickTip: document.getElementById('click-tip'),
+            eggUnlockTip: document.getElementById('egg-unlock-tip'),
+            skillBtn: document.getElementById('skill-btn'),
+            bookBtn: document.getElementById('book-btn'),
+            guideBtn: document.getElementById('guide-btn'),
+            eggBook: document.getElementById('egg-book'),
+            eggList: document.getElementById('egg-list'),
+            closeBook: document.getElementById('close-book'),
+            blackboard: document.getElementById('blackboard'),
+            platform: document.getElementById('platform'),
+            doorWindow: document.getElementById('door-window'),
+            trash: document.getElementById('trash'),
+            clock: document.getElementById('clock'),
+            desk: document.getElementById('desk'),
+            backDoor: document.getElementById('back-door')
+        };
+
+        // 纯JS内置音效，不用外部资源
+        function playSound(type) {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            if (type === 'oink') { // 猪叫
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.2);
+                gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.2);
+            } else if (type === 'ding') { // 解锁成就
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } else if (type === 'click') { // 点击音效
+                oscillator.type = 'square';
+                oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.1);
+            }
+        }
+
+        // 初始化彩蛋存档
+        gameData.eggList.forEach(egg => {
+            if (gameData.unlockEggs.includes(egg.id)) {
+                egg.unlock = true;
+            }
+        });
+        updateEggProgress();
+
+        // ------------------------------
+        // 核心工具函数
+        // ------------------------------
+
+        // 点击次数提示
+        function showClickTip(text) {
+            dom.clickTip.innerText = text;
+            dom.clickTip.style.opacity = 1;
+            clearTimeout(dom.clickTip.timer);
+            dom.clickTip.timer = setTimeout(() => {
+                dom.clickTip.style.opacity = 0;
+            }, 1000);
+        }
+
+        // 解锁彩蛋函数
+        function unlockEgg(eggId, extraTip) {
+            const egg = gameData.eggList.find(e => e.id === eggId);
+            if (egg && !egg.unlock) {
+                // 标记解锁
+                egg.unlock = true;
+                gameData.unlockEggs.push(eggId);
+                gameData.thisGameEggs = (gameData.thisGameEggs || 0) + 1;
+                localStorage.setItem('pig_gjk_eggs', JSON.stringify(gameData.unlockEggs));
+                
+                // 音效
+                playSound('ding');
+
+                // 全屏大字提示
+                dom.eggUnlockTip.innerText = `🎉 解锁彩蛋：${egg.name}！\n${extraTip || ''}`;
+                dom.eggUnlockTip.style.opacity = 1;
+                setTimeout(() => {
+                    dom.eggUnlockTip.style.opacity = 0;
+                }, 2500);
+
+                // 更新进度
+                updateEggProgress();
+
+                // 连锁解锁
+                const unlockCount = gameData.eggList.filter(e => e.unlock).length;
+                if (unlockCount >= 20 && !gameData.eggList.find(e => e.id === 26).unlock) {
+                    unlockEgg(26, "获得永久攻击翻倍buff！");
+                }
+                if (unlockCount >= 29 && !gameData.eggList.find(e => e.id === 30).unlock) {
+                    unlockEgg(30, "解锁全图鉴，开启自定义模式！");
+                }
+            }
+        }
+
+        // 更新彩蛋进度
+        function updateEggProgress() {
+            const unlockCount = gameData.eggList.filter(e => e.unlock).length;
+            dom.eggProgress.innerText = `已解锁彩蛋：${unlockCount}/${gameData.eggCount}`;
+        }
+
+        // 更新图鉴
+        function updateEggBook() {
+            dom.eggList.innerHTML = '';
+            gameData.eggList.forEach(egg => {
+                const item = document.createElement('div');
+                item.className = `egg-item ${egg.unlock ? 'egg-unlock' : 'egg-lock'}`;
+                item.innerHTML = `
+                    <h3>${egg.name}</h3>
+                    <p>${egg.desc}</p>
+                    <p style="font-size: 14px; margin-top: 5px;">${egg.unlock ? '✅ 已解锁' : '❌ 未解锁'}</p>
+                `;
+                dom.eggList.appendChild(item);
+            });
+        }
+
+        // 更新游戏状态
+        function updateGame() {
+            // 更新血条
+            const hpPercent = Math.max(0, (gameData.bossHp / gameData.maxHp) * 100);
+            dom.hpBar.style.width = `${hpPercent}%`;
+            dom.hpText.innerText = `猪头高健魁血量：${Math.max(0, Math.ceil(gameData.bossHp))}%`;
+            // 更新能量条
+            const energyPercent = Math.min(100, (gameData.energy / gameData.maxEnergy) * 100);
+            dom.energyBar.style.width = `${energyPercent}%`;
+            // 大招按钮显示
+            dom.skillBtn.style.display = gameData.energy >= gameData.maxEnergy ? 'block' : 'none';
+            // 游戏结束判断
+            if (gameData.bossHp <= 0 && !gameData.isGameOver) {
+                gameOver(true);
+            }
+            // 饶猪一命彩蛋判断
+            if (gameData.bossHp < 10 && gameData.isGameStart && !gameData.isGameOver && !gameData.eggList.find(e => e.id === 15).unlock) {
+                gameData.begTimer = setTimeout(() => {
+                    unlockEgg(15, "猪头投降了，直接掉血50%！");
+                    gameData.bossHp -= 50;
+                    updateGame();
+                }, 5000);
+            } else {
+                clearTimeout(gameData.begTimer);
+            }
+        }
+
+        // 游戏开始
+        function startGame() {
+            gameData.bossHp = gameData.maxHp;
+            gameData.energy = 0;
+            gameData.combo = 0;
+            gameData.isGameStart = true;
+            gameData.isGameOver = false;
+            gameData.thisGameEggs = 0;
+            gameData.isPeace = true;
+            gameData.oinkCount = 0;
+            dom.startMenu.style.display = 'none';
+            dom.endMenu.style.display = 'none';
+            dom.zzz.style.opacity = 1;
+            updateGame();
+            // 猪头睡觉动画
+            bossSleep();
+            // 和平摸鱼人彩蛋计时器
+            gameData.peaceTimer = setTimeout(() => {
+                if (gameData.isGameStart && gameData.isPeace && !gameData.isGameOver) {
+                    unlockEgg(14, "猪头睡死了，直接通关！");
+                    gameOver(true);
+                }
+            }, 60000);
+        }
+
+        // 游戏结束
+        function gameOver(isWin) {
+            gameData.isGameOver = true;
+            gameData.isGameStart = false;
+            clearTimeout(gameData.peaceTimer);
+            clearTimeout(gameData.begTimer);
+            dom.endMenu.style.display = 'flex';
+            if (isWin) {
+                dom.endTitle.innerText = "猪头高健魁被你揍趴下了！";
+                dom.endDesc.innerText = `本局解锁了${gameData.thisGameEggs || 0}个彩蛋，累计解锁${gameData.unlockEggs.length}个彩蛋！`;
+                // 迫害之王彩蛋
+                if ((gameData.thisGameEggs || 0) >= 10) {
+                    unlockEgg(25, "开启无限揍猪模式！");
+                }
+                // 终极和平结局
+                if (gameData.isPeace && gameData.eggList.find(e => e.id === 14).unlock && gameData.eggList.find(e => e.id === 15).unlock) {
+                    unlockEgg(24, "解锁双人逃课模式！");
+                    dom.endTitle.innerText = "终极和平结局：你和猪头高健魁一起逃课了！";
+                }
+            } else {
+                dom.endTitle.innerText = "你被猪头高健魁反杀了！";
+                dom.endDesc.innerText = "再接再厉，继续揍他！";
+            }
+        }
+
+        // 猪头受伤动画+猪叫
+        function bossHurt() {
+            dom.boss.classList.add('boss-hurt');
+            playSound('oink');
+            gameData.oinkCount++;
+            // 猪叫狂欢彩蛋
+            if (gameData.oinkCount >= 10 && !gameData.eggList.find(e => e.id === 28).unlock) {
+                unlockEgg(28, "猪头叫哑了，防御力归零！");
+            }
+            setTimeout(() => {
+                dom.boss.classList.remove('boss-hurt');
+            }, 100);
+        }
+
+        // 猪头睡觉动画
+        function bossSleep() {
+            if (!gameData.isGameStart) return;
+            dom.boss.classList.add('boss-sleep');
+            dom.zzz.style.opacity = 1;
+            setTimeout(() => {
+                if (!gameData.isGameStart) return;
+                dom.boss.classList.remove('boss-sleep');
+                dom.zzz.style.opacity = 0;
+                setTimeout(bossSleep, 2000);
+            }, 2000);
+        }
+
+        // 连击更新
+        function updateCombo() {
+            gameData.combo++;
+            clearTimeout(gameData.comboTimer);
+            dom.comboText.innerText = `×${gameData.combo} 连击！`;
+            dom.comboText.style.opacity = 1;
+            gameData.comboTimer = setTimeout(() => {
+                gameData.combo = 0;
+                dom.comboText.style.opacity = 0;
+            }, 1000);
+            // 20连击彩蛋
+            if (gameData.combo === 20) {
+                unlockEgg(10, "接下来10秒攻击无冷却！");
+            }
+        }
+
+        // ------------------------------
+        // 点击事件绑定
+        // ------------------------------
+
+        // 点击猪头事件
+        dom.boss.addEventListener('click', (e) => {
+            if (!gameData.isGameStart || gameData.isGameOver) return;
+            e.stopPropagation();
+            gameData.isPeace = false;
+            // 上帝模式秒杀
+            if (gameData.isGodMode) {
+                gameData.bossHp = 0;
+                updateGame();
+                return;
+            }
+            // 伤害计算
+            const damage = 3 + Math.random() * 4;
+            gameData.bossHp -= damage;
+            gameData.energy += 6;
+            // 动画和连击
+            bossHurt();
+            updateCombo();
+            updateGame();
+            // 手速彩蛋
+            const now = Date.now();
+            if (gameData.lastClickTime && now - gameData.lastClickTime < 200) {
+                gameData.fastClickCount++;
+                showClickTip(`手速连击：${gameData.fastClickCount}/5`);
+                if (gameData.fastClickCount >= 5) {
+                    unlockEgg(9, "接下来5秒必暴击！");
+                    gameData.bossHp -= 15;
+                    updateGame();
+                }
+            } else {
+                gameData.fastClickCount = 1;
+            }
+            gameData.lastClickTime = now;
+        });
+
+        // 大招按钮事件
+        dom.skillBtn.addEventListener('click', () => {
+            if (!gameData.isGameStart || gameData.isGameOver || gameData.energy < gameData.maxEnergy) return;
+            // 大招效果
+            playSound('oink');
+            gameData.energy = 0;
+            gameData.bossHp -= 35;
+            dom.boss.style.transform = 'translateX(-50%) scale(0.7)';
+            dom.eggUnlockTip.innerText = "🔥 班主任制裁！猪头被当场抓包！";
+            dom.eggUnlockTip.style.opacity = 1;
+            setTimeout(() => {
+                dom.boss.style.transform = 'translateX(-50%) scale(1)';
+                dom.eggUnlockTip.style.opacity = 0;
+            }, 800);
+            updateGame();
+        });
+
+        // 开始按钮事件
+        dom.startBtn.addEventListener('click', startGame);
+        // 重开按钮事件
+        dom.restartBtn.addEventListener('click', startGame);
+        // 图鉴按钮事件
+        dom.bookBtn.addEventListener('click', () => {
+            updateEggBook();
+            dom.eggBook.style.display = 'block';
+        });
+        dom.closeBook.addEventListener('click', () => {
+            dom.eggBook.style.display = 'none';
+        });
+
+        // 彩蛋指引按钮
+        let guideClickCount = 0;
+        dom.guideBtn.addEventListener('click', () => {
+            guideClickCount++;
+            showClickTip(`指引点击：${guideClickCount}/5`);
+            playSound('click');
+            // 高亮所有可互动元素
+            const interactiveEls = document.querySelectorAll('.interactive');
+            interactiveEls.forEach(el => {
+                el.classList.add('guide-highlight');
+                setTimeout(() => {
+                    el.classList.remove('guide-highlight');
+                }, 2000);
+            });
+            // 逃课大师彩蛋
+            if (guideClickCount >= 5) {
+                unlockEgg(29, "直接通关！");
+                gameOver(true);
+                guideClickCount = 0;
+            }
+        });
+
+        // ------------------------------
+        // 场景元素彩蛋触发
+        // ------------------------------
+
+        // 1. 标题彩蛋
+        let titleClickCount = 0;
+        dom.startTitle.addEventListener('click', () => {
+            titleClickCount++;
+            showClickTip(`标题点击：${titleClickCount}/3`);
+            playSound('click');
+            if (titleClickCount >= 3) {
+                unlockEgg(1, "开局猪头直接掉血15%！");
+                gameData.maxHp -= 15;
+                titleClickCount = 0;
+            }
+        });
+
+        // 2. 按钮悬停彩蛋
+        let btnHoverTimer = null;
+        dom.startBtn.addEventListener('mouseenter', () => {
+            btnHoverTimer = setTimeout(() => {
+                dom.startBtn.innerText = "班主任来了！快跑！";
+                unlockEgg(2, "开局自带满能量！");
+                gameData.energy = 100;
+            }, 5000);
+        });
+        dom.startBtn.addEventListener('mouseleave', () => {
+            clearTimeout(btnHoverTimer);
+            dom.startBtn.innerText = "开始揍猪";
+        });
+
+        // 3. 黑板彩蛋
+        let blackboardClickCount = 0;
+        dom.blackboard.addEventListener('click', () => {
+            if (!gameData.isGameStart) return;
+            blackboardClickCount++;
+            showClickTip(`黑板点击：${blackboardClickCount}/3`);
+            playSound('click');
+            if (blackboardClickCount >= 3) {
+                unlockEgg(3, "黑板擦砸中猪头，掉血10%！");
+                gameData.bossHp -= 10;
+                updateGame();
+                blackboardClickCount = 0;
+            }
+        });
+
+        // 4. 讲台彩蛋
+        let platformClickCount = 0;
+        dom.platform.addEventListener('click', () => {
+            if (!gameData.isGameStart) return;
+            platformClickCount++;
+            showClickTip(`讲台点击：${platformClickCount}/5`);
+            playSound('click');
+            if (platformClickCount >= 5) {
+                unlockEgg(4, "讲台砸中猪头，掉血12%！");
+                gameData.bossHp -= 12;
+                updateGame();
+                platformClickCount = 0;
+            }
+        });
+
+        // 5. 后门窗户彩蛋
+        let doorClickCount = 0;
+        dom.doorWindow.addEventListener('click', () => {
+            if (!gameData.isGameStart) return;
+            doorClickCount++;
+            showClickTip(`后门点击：${doorClickCount}/3`);
+            playSound('click');
+            if (doorClickCount >= 3) {
+                unlockEgg(5, "班主任后门查岗！猪头僵直5秒！");
+                gameData.bossHp -= 15;
+                updateGame();
+                doorClickCount = 0;
+            }
+        });
+
+        // 6. 垃圾桶彩蛋
+        let trashClickCount = 0;
+        dom.trash.addEventListener('click', () => {
+            if (!gameData.isGameStart) return;
+            trashClickCount++;
+            showClickTip(`垃圾桶点击：${trashClickCount}/3`);
+            playSound('click');
+            if (trashClickCount >= 3) {
+                unlockEgg(6, "垃圾桶砸中猪头，掉血8%！");
+                gameData.bossHp -= 8;
+                updateGame();
+                trashClickCount = 0;
+            }
+        });
+
+        // 7. 时钟彩蛋
+        let clockClickCount = 0;
+        dom.clock.addEventListener('click', () => {
+            if (!gameData.isGameStart) return;
+            clockClickCount++;
+            showClickTip(`时钟点击：${clockClickCount}/5`);
+            playSound('click');
+            if (clockClickCount >= 5) {
+                unlockEgg(7, "下课铃响了！猪头直接掉血20%！");
+                gameData.bossHp -= 20;
+                updateGame();
+                clockClickCount = 0;
+            }
+        });
+
+        // 8. 课桌彩蛋
+        let deskClickCount = 0;
+        dom.desk.addEventListener('click', () => {
+            if (!gameData.isGameStart) return;
+            deskClickCount++;
+            showClickTip(`课桌点击：${deskClickCount}/5`);
+            playSound('click');
+            if (deskClickCount >= 5) {
+                unlockEgg(8, "课桌被掀翻！猪头掉血10%！");
+                gameData.bossHp -= 10;
+                updateGame();
+                deskClickCount = 0;
+            }
+        });
+
+        // 11. 猪鼻子彩蛋
+        let noseClickCount = 0;
+        dom.boss.addEventListener('click', (e) => {
+            if (!gameData.isGameStart || gameData.isGameOver) return;
+            const rect = dom.boss.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            // 鼻子在猪头中间位置
+            if (x > rect.width * 0.3 && x < rect.width * 0.7 && y > rect.height * 0.4 && y < rect.height * 0.7) {
+                noseClickCount++;
+                showClickTip(`猪鼻子点击：${noseClickCount}/5`);
+                if (noseClickCount >= 5) {
+                    unlockEgg(11, "猪鼻子被戳红了！猪头掉血15%！");
+                    gameData.bossHp -= 15;
+                    updateGame();
+                    noseClickCount = 0;
+                }
+            }
+        });
+
+        // 12. 猪耳朵彩蛋
+        let earClickCount = 0;
+        dom.boss.addEventListener('click', (e) => {
+            if (!gameData.isGameStart || gameData.isGameOver) return;
+            const rect = dom.boss.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            // 耳朵在猪头左右两侧
+            if ((x < rect.width * 0.2 || x > rect.width * 0.8) && y < rect.height * 0.4) {
+                earClickCount++;
+                showClickTip(`猪耳朵点击：${earClickCount}/3`);
+                if (earClickCount >= 3) {
+                    unlockEgg(12, "猪耳朵被揪红了！猪头僵直3秒！");
+                    gameData.bossHp -= 8;
+                    updateGame();
+                    earClickCount = 0;
+                }
+            }
+        });
+
+        // 13. 睡觉被抓彩蛋
+        let mouthClickCount = 0;
+        dom.boss.addEventListener('click', (e) => {
+            if (!gameData.isGameStart || gameData.isGameOver) return;
+            const rect = dom.boss.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            // 嘴在猪头下方
+            if (x > rect.width * 0.35 && x < rect.width * 0.65 && y > rect.height * 0.8 && dom.zzz.style.opacity == 1) {
+                mouthClickCount++;
+                showClickTip(`猪嘴点击：${mouthClickCount}/3`);
+                if (mouthClickCount >= 3) {
+                    unlockEgg(13, "睡觉被抓包！猪头掉血10%！");
+                    gameData.bossHp -= 10;
+                    updateGame();
+                    mouthClickCount = 0;
+                }
+            }
+        });
+
+        // 17. 空大嘲讽彩蛋
+        let energyClickCount = 0;
+        dom.energyBar.parentElement.addEventListener('click', () => {
+            if (!gameData.isGameStart || gameData.isGameOver) return;
+            if (gameData.energy >= gameData.maxEnergy) {
+                energyClickCount++;
+                showClickTip(`能量条点击：${energyClickCount}/3`);
+                if (energyClickCount >= 3) {
+                    unlockEgg(17, "空大嘲讽！大招伤害翻倍！");
+                    gameData.energy = 0;
+                    gameData.bossHp -= 50;
+                    updateGame();
+                    energyClickCount = 0;
+                }
+            }
+        });
+
+        // 27. 全屏秒杀彩蛋
+        let cornerClickCount = 0;
+        const corners = [
+            { x: 0, y: 0 },
+            { x: window.innerWidth, y: 0 },
+            { x: 0, y: window.innerHeight },
+            { x: window.innerWidth, y: window.innerHeight }
+        ];
+        document.addEventListener('click', (e) => {
+            if (!gameData.isGameStart || gameData.isGameOver) return;
+            const isCorner = corners.some(corner => {
+                return Math.abs(e.clientX - corner.x) < 50 && Math.abs(e.clientY - corner.y) < 50;
+            });
+            if (isCorner) {
+                cornerClickCount++;
+                showClickTip(`角落点击：${cornerClickCount}/8`);
+                if (cornerClickCount >= 8) {
+                    unlockEgg(27, "全屏秒杀！猪头直接掉血50%！");
+                    gameData.bossHp -= 50;
+                    updateGame();
+                    cornerClickCount = 0;
+                }
+            }
+        });
+
+        // ------------------------------
+        // 键盘彩蛋触发
+        // ------------------------------
+        let keyHistory = [];
+        const konamiCode = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
+        document.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            keyHistory.push(key);
+            if (keyHistory.length > 10) keyHistory.shift();
+
+            // 23. 上帝模式 Konami代码
+            if (keyHistory.join(',') === konamiCode.join(',') && !gameData.isGameStart) {
+                unlockEgg(23, "无敌+普攻秒杀，开启上帝模式！");
+                gameData.isGodMode = true;
+            }
+
+            // 18. 班主任来了 BZRL
+            if (keyHistory.slice(-4).join('') === 'bzrl' && gameData.isGameStart) {
+                unlockEgg(18, "班主任来了！猪头吓得掉血20%！");
+                gameData.bossHp -= 20;
+                updateGame();
+            }
+
+            // 19. 作业没写 ZYMX
+            if (keyHistory.slice(-4).join('') === 'zymx' && gameData.isGameStart) {
+                unlockEgg(19, "作业没写被抓！一堆作业砸中猪头！");
+                gameData.bossHp -= 15;
+                updateGame();
+            }
+
+            // 20. 鸡你太美 JNTM
+            if (keyHistory.slice(-4).join('') === 'jntm' && gameData.isGameStart) {
+                unlockEgg(20, "猪头跳篮球舞，无法攻击5秒！");
+                gameData.bossHp -= 10;
+                updateGame();
+            }
+
+            // 21. 奥利给 OLG
+            if (keyHistory.slice(-3).join('') === 'olg' && gameData.isGameStart) {
+                unlockEgg(21, "能量直接拉满，大招解锁！");
+                gameData.energy = 100;
+                updateGame();
+            }
+
+            // 22. 退退退大法
+            if (keyHistory.slice(-3).join('') === 'ttt' && gameData.isGameStart) {
+                unlockEgg(22, "退退退！猪头被推到墙角僵直5秒！");
+                gameData.bossHp -= 12;
+                updateGame();
+            }
+        });
+    </script>
+</body>
+</html>

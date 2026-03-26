@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>李亮亮大战丧尸高健魁 🧟‍♂️</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: "Microsoft YaHei", sans-serif; 
+            background: #121212; 
+            color: #fff; 
+            text-align: center;
+            padding: 15px 0;
+            overflow: hidden;
+        }
+        .game-header {
+            display: flex;
+            justify-content: space-around;
+            max-width: 900px;
+            margin: 0 auto 10px;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 12px;
+            border: 2px solid #ff4500;
+        }
+        .header-item {
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .header-item span {
+            color: #ffd700;
+            font-weight: bold;
+        }
+        #gameCanvas {
+            border: 3px solid #ff4500;
+            border-radius: 8px;
+            background: #2d2d2d;
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAUVBMVEWFhYWDg4N3d3dtbW17e3t1dXWBgYGHh4d5eXlzc3OLi4ubm5uVlZWPj4+NjY19fX2JiYl/f39ra2uRkZGZmZlpaWmXl5dvb29xcXGTk5NnZ2c8aB95AAAAPUlEQVRIiWNgYGD4z8DAwMgABXAGNgGwSgwVAFbmAgXQdISfAAAAAElFTkSuQmCC');
+            cursor: none;
+        }
+        .game-controls {
+            margin-top: 15px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .control-tip {
+            font-size: 16px;
+            line-height: 1.5;
+            color: #ccc;
+        }
+        .btn-group {
+            margin-top: 10px;
+        }
+        .game-btn {
+            padding: 10px 25px;
+            margin: 0 8px;
+            background: #ff4500;
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .game-btn:hover {
+            background: #ff6347;
+            transform: scale(1.05);
+        }
+        .game-over {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            padding: 40px;
+            border-radius: 15px;
+            border: 3px solid #ff4500;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            z-index: 100;
+        }
+        .game-over h2 {
+            color: #ff4500;
+            font-size: 32px;
+            margin: 0;
+        }
+        .game-over p {
+            font-size: 20px;
+        }
+        .game-over span {
+            color: #ffd700;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-header">
+        <div class="header-item">得分：<span id="score">0</span></div>
+        <div class="header-item">波次：<span id="wave">1</span></div>
+        <div class="header-item">武器等级：<span id="weaponLevel">1</span></div>
+        <div class="header-item">生命值：<span id="hp">100</span></div>
+    </div>
+
+    <canvas id="gameCanvas" width="900" height="600"></canvas>
+
+    <div class="game-controls">
+        <p class="control-tip">🎮 操控说明：WASD移动 | 鼠标瞄准射击 | 收集红色物资升级武器 | 躲避丧尸攻击</p>
+        <div class="btn-group">
+            <button class="game-btn" id="startBtn">开始游戏</button>
+            <button class="game-btn" id="pauseBtn" disabled>暂停游戏</button>
+            <button class="game-btn" id="restartBtn">重新开始</button>
+        </div>
+    </div>
+
+    <div class="game-over" id="gameOver">
+        <h2>游戏结束！</h2>
+        <p>最终得分：<span id="finalScore">0</span></p>
+        <p>坚持波次：<span id="finalWave">1</span></p>
+        <button class="game-btn" id="replayBtn">再来一局</button>
+    </div>
+
+    <script>
+        // 游戏核心变量
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const waveElement = document.getElementById('wave');
+        const weaponLevelElement = document.getElementById('weaponLevel');
+        const hpElement = document.getElementById('hp');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const gameOverElement = document.getElementById('gameOver');
+        const finalScoreElement = document.getElementById('finalScore');
+        const finalWaveElement = document.getElementById('finalWave');
+        const replayBtn = document.getElementById('replayBtn');
+
+        // 游戏状态
+        let gameRunning = false;
+        let gamePaused = false;
+        let score = 0;
+        let wave = 1;
+        let weaponLevel = 1;
+        let hp = 100;
+        let zombieCount = 5; // 每波丧尸数量
+        let zombieSpeed = 1; // 丧尸初始速度
+        let spawnTimer = 0; // 丧尸生成计时器
+        let spawnInterval = 1500; // 丧尸生成间隔（ms）
+
+        // 玩家（李亮亮）配置
+        const player = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            size: 30,
+            speed: 5,
+            color: '#00ff9d',
+            directionX: 0,
+            directionY: 0,
+            mouseX: 0,
+            mouseY: 0
+        };
+
+        // 键盘状态
+        const keys = {
+            w: false,
+            a: false,
+            s: false,
+            d: false
+        };
+
+        // 炮弹数组
+        const bullets = [];
+        // 丧尸数组（高健魁）
+        const zombies = [];
+        // 物资数组
+        const supplies = [];
+
+        // 初始化游戏
+        function initGame() {
+            score = 0;
+            wave = 1;
+            weaponLevel = 1;
+            hp = 100;
+            zombieCount = 5;
+            zombieSpeed = 1;
+            spawnTimer = 0;
+
+            // 重置玩家位置
+            player.x = canvas.width / 2;
+            player.y = canvas.height / 2;
+
+            // 清空数组
+            bullets.length = 0;
+            zombies.length = 0;
+            supplies.length = 0;
+
+            // 更新UI
+            updateUI();
+
+            // 隐藏游戏结束界面
+            gameOverElement.style.display = 'none';
+
+            // 重置按钮状态
+            startBtn.disabled = true;
+            pauseBtn.disabled = false;
+            gameRunning = true;
+            gamePaused = false;
+
+            // 启动游戏循环
+            gameLoop();
+        }
+
+        // 更新UI
+        function updateUI() {
+            scoreElement.textContent = score;
+            waveElement.textContent = wave;
+            weaponLevelElement.textContent = weaponLevel;
+            hpElement.textContent = hp;
+            finalScoreElement.textContent = score;
+            finalWaveElement.textContent = wave;
+        }
+
+        // 绘制玩家（李亮亮）
+        function drawPlayer() {
+            // 玩家身体
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
+            ctx.fillStyle = player.color;
+            ctx.fill();
+            ctx.strokeStyle = '#000';
+            ctx.stroke();
+
+            // 玩家方向线（瞄准鼠标）
+            ctx.beginPath();
+            const angle = Math.atan2(player.mouseY - player.y, player.mouseX - player.x);
+            ctx.moveTo(player.x, player.y);
+            ctx.lineTo(
+                player.x + Math.cos(angle) * player.size,
+                player.y + Math.sin(angle) * player.size
+            );
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // 文字标签
+            ctx.font = '14px Arial';
+            ctx.fillStyle = '#000';
+            ctx.textAlign = 'center';
+            ctx.fillText('李亮亮', player.x, player.y + player.size + 20);
+        }
+
+        // 绘制炮弹
+        function drawBullets() {
+            bullets.forEach((bullet, index) => {
+                ctx.beginPath();
+                ctx.arc(bullet.x, bullet.y, bullet.size, 0, Math.PI * 2);
+                ctx.fillStyle = bullet.color;
+                ctx.fill();
+
+                // 炮弹移动
+                const angle = Math.atan2(bullet.dy, bullet.dx);
+                bullet.x += Math.cos(angle) * bullet.speed;
+                bullet.y += Math.sin(angle) * bullet.speed;
+
+                // 超出屏幕移除炮弹
+                if (
+                    bullet.x < 0 ||
+                    bullet.x > canvas.width ||
+                    bullet.y < 0 ||
+                    bullet.y > canvas.height
+                ) {
+                    bullets.splice(index, 1);
+                }
+            });
+        }
+
+        // 绘制丧尸（高健魁）
+        function drawZombies() {
+            zombies.forEach(zombie => {
+                // 丧尸身体
+                ctx.beginPath();
+                ctx.arc(zombie.x, zombie.y, zombie.size, 0, Math.PI * 2);
+                ctx.fillStyle = zombie.color;
+                ctx.fill();
+                ctx.strokeStyle = '#000';
+                ctx.stroke();
+
+                // 丧尸眼睛
+                ctx.beginPath();
+                ctx.arc(zombie.x - 8, zombie.y - 5, 5, 0, Math.PI * 2);
+                ctx.arc(zombie.x + 8, zombie.y - 5, 5, 0, Math.PI * 2);
+                ctx.fillStyle = '#ff0000';
+                ctx.fill();
+
+                // 丧尸嘴巴（獠牙）
+                ctx.beginPath();
+                ctx.moveTo(zombie.x - 10, zombie.y + 8);
+                ctx.lineTo(zombie.x + 10, zombie.y + 8);
+                ctx.lineTo(zombie.x + 5, zombie.y + 15);
+                ctx.lineTo(zombie.x - 5, zombie.y + 15);
+                ctx.closePath();
+                ctx.fillStyle = '#000';
+                ctx.fill();
+
+                // 文字标签
+                ctx.font = '14px Arial';
+                ctx.fillStyle = '#fff';
+                ctx.textAlign = 'center';
+                ctx.fillText('高健魁', zombie.x, zombie.y + zombie.size + 20);
+            });
+        }
+
+        // 绘制物资
+        function drawSupplies() {
+            supplies.forEach(supply => {
+                ctx.beginPath();
+                ctx.rect(supply.x - supply.size / 2, supply.y - supply.size / 2, supply.size, supply.size);
+                ctx.fillStyle = '#ff4500';
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.stroke();
+
+                // 物资图标（十字）
+                ctx.beginPath();
+                ctx.moveTo(supply.x, supply.y - supply.size / 4);
+                ctx.lineTo(supply.x, supply.y + supply.size / 4);
+                ctx.moveTo(supply.x - supply.size / 4, supply.y);
+                ctx.lineTo(supply.x + supply.size / 4, supply.y);
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            });
+        }
+
+        // 绘制生命值条
+        function drawHpBar() {
+            const barWidth = 150;
+            const barHeight = 15;
+            const x = canvas.width - barWidth - 20;
+            const y = 20;
+
+            // 背景条
+            ctx.fillStyle = '#333';
+            ctx.fillRect(x, y, barWidth, barHeight);
+
+            // 生命值条
+            const hpWidth = (hp / 100) * barWidth;
+            ctx.fillStyle = hp > 30 ? '#00ff9d' : '#ff4500';
+            ctx.fillRect(x, y, hpWidth, barHeight);
+
+            // 文字
+            ctx.font = '12px Arial';
+            ctx.fillStyle = '#fff';
+            ctx.textAlign = 'center';
+            ctx.fillText(`${hp}%`, x + barWidth / 2, y + barHeight - 2);
+        }
+
+        // 生成炮弹
+        function spawnBullet() {
+            const angle = Math.atan2(player.mouseY - player.y, player.mouseX - player.x);
+            const bulletSize = weaponLevel === 1 ? 5 : weaponLevel === 2 ? 7 : 10;
+            const bulletSpeed = weaponLevel === 1 ? 8 : weaponLevel === 2 ? 10 : 12;
+            const bulletColor = weaponLevel === 1 ? '#00ffff' : weaponLevel === 2 ? '#ffff00' : '#ff00ff';
+
+            // 多武器等级：1级单发，2级双发，3级三发
+            if (weaponLevel === 1) {
+                bullets.push({
+                    x: player.x + Math.cos(angle) * player.size,
+                    y: player.y + Math.sin(angle) * player.size,
+                    size: bulletSize,
+                    speed: bulletSpeed,
+                    dx: Math.cos(angle),
+                    dy: Math.sin(angle),
+                    color: bulletColor
+                });
+            } else if (weaponLevel === 2) {
+                // 双发（左右偏移10度）
+                bullets.push({
+                    x: player.x + Math.cos(angle - 0.17) * player.size,
+                    y: player.y + Math.sin(angle - 0.17) * player.size,
+                    size: bulletSize,
+                    speed: bulletSpeed,
+                    dx: Math.cos(angle - 0.17),
+                    dy: Math.sin(angle - 0.17),
+                    color: bulletColor
+                });
+                bullets.push({
+                    x: player.x + Math.cos(angle + 0.17) * player.size,
+                    y: player.y + Math.sin(angle + 0.17) * player.size,
+                    size: bulletSize,
+                    speed: bulletSpeed,
+                    dx: Math.cos(angle + 0.17),
+                    dy: Math.sin(angle + 0.17),
+                    color: bulletColor
+                });
+            } else if (weaponLevel === 3) {
+                // 三发（左右偏移15度）
+                bullets.push({
+                    x: player.x + Math.cos(angle - 0.26) * player.size,
+                    y: player.y + Math.sin(angle - 0.26) * player.size,
+                    size: bulletSize,
+                    speed: bulletSpeed,
+                    dx: Math.cos(angle - 0.26),
+                    dy: Math.sin(angle - 0.26),
+                    color: bulletColor
+                });
+                bullets.push({
+                    x: player.x + Math.cos(angle) * player.size,
+                    y: player.y + Math.sin(angle) * player.size,
+                    size: bulletSize,
+                    speed: bulletSpeed,
+                    dx: Math.cos(angle),
+                    dy: Math.sin(angle),
+                    color: bulletColor
+                });
+                bullets.push({
+                    x: player.x + Math.cos(angle + 0.26) * player.size,
+                    y: player.y + Math.sin(angle + 0.26) * player.size,
+                    size: bulletSize,
+                    speed: bulletSpeed,
+                    dx: Math.cos(angle + 0.26),
+                    dy: Math.sin(angle + 0.26),
+                    color: bulletColor
+                });
+            }
+        }
+
+        // 生成丧尸（高健魁）
+        function spawnZombie() {
+            if (zombies.length >= zombieCount) return;
+
+            // 随机在屏幕边缘生成
+            const spawnSide = Math.floor(Math.random() * 4);
+            let x, y;
+
+            switch (spawnSide) {
+                case 0: // 上
+                    x = Math.random() * canvas.width;
+                    y = -30;
+                    break;
+                case 1: // 右
+                    x = canvas.width + 30;
+                    y = Math.random() * canvas.height;
+                    break;
+                case 2: // 下
+                    x = Math.random() * canvas.width;
+                    y = canvas.height + 30;
+                    break;
+                case 3: // 左
+                    x = -30;
+                    y = Math.random() * canvas.height;
+                    break;
+            }
+
+            zombies.push({
+                x: x,
+                y: y,
+                size: 35,
+                speed: zombieSpeed,
+                color: '#228b22',
+                hp: weaponLevel === 1 ? 1 : weaponLevel === 2 ? 2 : 3 // 武器等级越高，丧尸血量越多
+            });
+        }
+
+        // 生成物资
+        function spawnSupply() {
+            // 每50分生成一个物资
+            if (score > 0 && score % 50 === 0 && supplies.length === 0) {
+                supplies.push({
+                    x: Math.random() * (canvas.width - 40) + 20,
+                    y: Math.random() * (canvas.height - 40) + 20,
+                    size: 25
+                });
+            }
+        }
+
+        // 玩家移动
+        function movePlayer() {
+            if (keys.w && player.y - player.size > 0) {
+                player.y -= player.speed;
+            }
+            if (keys.s && player.y + player.size < canvas.height) {
+                player.y += player.speed;
+            }
+            if (keys.a && player.x - player.size > 0) {
+                player.x -= player.speed;
+            }
+            if (keys.d && player.x + player.size < canvas.width) {
+                player.x += player.speed;
+            }
+        }
+
+        // 丧尸移动（追踪玩家）
+        function moveZombies() {
+            zombies.forEach(zombie => {
+                const angle = Math.atan2(player.y - zombie.y, player.x - zombie.x);
+                zombie.x += Math.cos(angle) * zombie.speed;
+                zombie.y += Math.sin(angle) * zombie.speed;
+            });
+        }
+
+        // 碰撞检测（炮弹击中丧尸）
+        function checkBulletZombieCollision() {
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const bullet = bullets[i];
+                for (let j = zombies.length - 1; j >= 0; j--) {
+                    const zombie = zombies[j];
+                    const distance = Math.hypot(bullet.x - zombie.x, bullet.y - zombie.y);
+
+                    if (distance < bullet.size + zombie.size) {
+                        // 丧尸掉血
+                        zombie.hp--;
+                        bullets.splice(i, 1);
+
+                        // 丧尸死亡
+                        if (zombie.hp <= 0) {
+                            zombies.splice(j, 1);
+                            score += 10; // 击杀得分
+                            updateUI();
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        // 碰撞检测（玩家与丧尸）
+        function checkPlayerZombieCollision() {
+            zombies.forEach(zombie => {
+                const distance = Math.hypot(player.x - zombie.x, player.y - zombie.y);
+                if (distance < player.size + zombie.size) {
+                    // 玩家掉血
+                    hp -= 0.5;
+                    if (hp <= 0) hp = 0;
+                    updateUI();
+
+                    // 游戏结束
+                    if (hp === 0) {
+                        endGame();
+                    }
+                }
+            });
+        }
+
+        // 碰撞检测（玩家与物资）
+        function checkPlayerSupplyCollision() {
+            for (let i = supplies.length - 1; i >= 0; i--) {
+                const supply = supplies[i];
+                const distance = Math.hypot(player.x - supply.x, player.y - supply.y);
+
+                if (distance < player.size + supply.size / 2) {
+                    // 升级武器（最高3级）
+                    if (weaponLevel < 3) {
+                        weaponLevel++;
+                    } else {
+                        // 3级后物资恢复生命值
+                        hp = Math.min(hp + 30, 100);
+                    }
+                    supplies.splice(i, 1);
+                    updateUI();
+                }
+            }
+        }
+
+        // 波次升级
+        function checkWaveUpgrade() {
+            if (zombies.length === 0 && score > 0 && score % (zombieCount * 10) === 0) {
+                wave++;
+                zombieCount += 3; // 每波增加3个丧尸
+                zombieSpeed += 0.2; // 每波增加速度
+                spawnInterval = Math.max(1000, spawnInterval - 100); // 缩短生成间隔
+                updateUI();
+
+                // 波次提示
+                ctx.font = '30px Arial';
+                ctx.fillStyle = '#ffd700';
+                ctx.textAlign = 'center';
+                ctx.fillText(`第${wave}波！`, canvas.width / 2, canvas.height / 2);
+            }
+        }
+
+        // 游戏结束
+        function endGame() {
+            gameRunning = false;
+            gameOverElement.style.display = 'flex';
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+        }
+
+        // 游戏循环
+        function gameLoop(timestamp) {
+            if (!gameRunning) return;
+            if (gamePaused) {
+                requestAnimationFrame(gameLoop);
+                return;
+            }
+
+            // 清空画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 生成丧尸
+            spawnTimer += timestamp - (window.lastTimestamp || timestamp);
+            window.lastTimestamp = timestamp;
+            if (spawnTimer > spawnInterval) {
+                spawnZombie();
+                spawnTimer = 0;
+            }
+
+            // 生成物资
+            spawnSupply();
+
+            // 移动和碰撞检测
+            movePlayer();
+            moveZombies();
+            checkBulletZombieCollision();
+            checkPlayerZombieCollision();
+            checkPlayerSupplyCollision();
+            checkWaveUpgrade();
+
+            // 绘制所有元素
+            drawPlayer();
+            drawBullets();
+            drawZombies();
+            drawSupplies();
+            drawHpBar();
+
+            // 持续循环
+            requestAnimationFrame(gameLoop);
+        }
+
+        // 事件监听：键盘控制
+        document.addEventListener('keydown', (e) => {
+            switch (e.key.toLowerCase()) {
+                case 'w':
+                    keys.w = true;
+                    break;
+                case 'a':
+                    keys.a = true;
+                    break;
+                case 's':
+                    keys.s = true;
+                    break;
+                case 'd':
+                    keys.d = true;
+                    break;
+                case 'p':
+                    gamePaused = !gamePaused;
+                    pauseBtn.textContent = gamePaused ? '继续游戏' : '暂停游戏';
+                    break;
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            switch (e.key.toLowerCase()) {
+                case 'w':
+                    keys.w = false;
+                    break;
+                case 'a':
+                    keys.a = false;
+                    break;
+                case 's':
+                    keys.s = false;
+                    break;
+                case 'd':
+                    keys.d = false;
+                    break;
+            }
+        });
+
+        // 事件监听：鼠标控制（瞄准+射击）
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            player.mouseX = e.clientX - rect.left;
+            player.mouseY = e.clientY - rect.top;
+        });
+
+        canvas.addEventListener('click', () => {
+            if (gameRunning && !gamePaused) {
+                spawnBullet();
+            }
+        });
+
+        // 按钮事件
+        startBtn.addEventListener('click', initGame);
+        pauseBtn.addEventListener('click', () => {
+            gamePaused = !gamePaused;
+            pauseBtn.textContent = gamePaused ? '继续游戏' : '暂停游戏';
+        });
+        restartBtn.addEventListener('click', initGame);
+        replayBtn.addEventListener('click', initGame);
+    </script>
+</body>
+</html>
