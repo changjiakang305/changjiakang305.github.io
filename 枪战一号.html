@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>和平精英网页版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+            touch-action: none;
+            outline: none;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #1a1a1a;
+            font-family: system-ui, Arial, sans-serif;
+            color: #fff;
+        }
+        /* 顶部状态栏 */
+        .status-bar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px;
+            font-size: 16px;
+            font-weight: bold;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 999;
+            background: rgba(0,0,0,0.5);
+        }
+        /* 游戏画布 */
+        #gameCanvas {
+            display: block;
+            background: #2d5016;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+        /* 虚拟摇杆 - 左下角 */
+        .joystick-wrap {
+            position: fixed;
+            left: 20px;
+            bottom: 30px;
+            width: 120px;
+            height: 120px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.3);
+            z-index: 998;
+        }
+        .joystick-thumb {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            background: rgba(30,144,255,0.9);
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(30,144,255,0.6);
+        }
+        /* 操作按钮 - 右下角 */
+        .btn-wrap {
+            position: fixed;
+            right: 20px;
+            bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: flex-end;
+            z-index: 998;
+        }
+        .game-btn {
+            border: none;
+            border-radius: 50%;
+            color: #fff;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.4);
+        }
+        .shoot-btn {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,68,68,0.9);
+        }
+        .reload-btn {
+            width: 60px;
+            height: 60px;
+            background: rgba(255,215,0,0.9);
+        }
+        /* 重启按钮 */
+        .restart-btn {
+            position: fixed;
+            left: 50%;
+            top: 55%;
+            transform: translate(-50%, -50%);
+            padding: 12px 30px;
+            background: #1e90ff;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 999;
+            display: none;
+        }
+        /* 小屏手机适配 */
+        @media (max-width: 400px) {
+            .joystick-wrap {
+                width: 100px;
+                height: 100px;
+                left: 10px;
+                bottom: 20px;
+            }
+            .joystick-thumb {
+                width: 40px;
+                height: 40px;
+            }
+            .btn-wrap {
+                right: 10px;
+                bottom: 20px;
+            }
+            .shoot-btn {
+                width: 70px;
+                height: 70px;
+            }
+            .reload-btn {
+                width: 55px;
+                height: 55px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="status-bar">
+        <div>血量: <span id="hp">100</span></div>
+        <div>击杀: <span id="kill">0</span></div>
+        <div>弹药: <span id="ammo">30/90</span></div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- 虚拟摇杆 -->
+    <div class="joystick-wrap" id="joystick">
+        <div class="joystick-thumb" id="joystickThumb"></div>
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="btn-wrap">
+        <button class="game-btn reload-btn" id="reloadBtn">换弹</button>
+        <button class="game-btn shoot-btn" id="shootBtn">射击</button>
+    </div>
+
+    <!-- 重启按钮 -->
+    <button class="restart-btn" id="restartBtn">重新开始</button>
+
+    <script>
+        // ========== 基础元素获取 ==========
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const hpText = document.getElementById('hp');
+        const killText = document.getElementById('kill');
+        const ammoText = document.getElementById('ammo');
+        const joystick = document.getElementById('joystick');
+        const joystickThumb = document.getElementById('joystickThumb');
+        const shootBtn = document.getElementById('shootBtn');
+        const reloadBtn = document.getElementById('reloadBtn');
+        const restartBtn = document.getElementById('restartBtn');
+
+        // ========== 屏幕适配 ==========
+        let screenWidth = window.innerWidth;
+        let screenHeight = window.innerHeight;
+        const dpr = window.devicePixelRatio || 1;
+
+        // 初始化画布尺寸
+        function initCanvas() {
+            screenWidth = window.innerWidth;
+            screenHeight = window.innerHeight;
+            
+            canvas.width = screenWidth * dpr;
+            canvas.height = screenHeight * dpr;
+            canvas.style.width = screenWidth + 'px';
+            canvas.style.height = screenHeight + 'px';
+            
+            ctx.scale(dpr, dpr);
+        }
+        initCanvas();
+        window.addEventListener('resize', () => {
+            initCanvas();
+            player.x = screenWidth / 2;
+            player.y = screenHeight / 2;
+            // 屏幕旋转后重置默认瞄准点
+            aimData.aimX = screenWidth / 2;
+            aimData.aimY = screenHeight / 2;
+        });
+
+        // ========== 游戏核心配置 ==========
+        // 玩家配置
+        const player = {
+            x: screenWidth / 2,
+            y: screenHeight / 2,
+            size: 30,
+            speed: 4,
+            hp: 100,
+            maxHp: 100,
+            ammo: 30,
+            maxAmmo: 30,
+            spareAmmo: 90,
+            aimAngle: 0 // 枪口瞄准角度，每帧实时更新
+        };
+
+        // 游戏数据
+        let bullets = [];
+        let enemies = [];
+        let killCount = 0;
+        let isGameOver = false;
+        let shootTimer = null;
+        let enemyTimer = null;
+
+        // 键盘状态（电脑端兼容）
+        const keys = {};
+        // 摇杆状态
+        const joystickData = {
+            active: false,
+            centerX: 0,
+            centerY: 0,
+            maxDist: 40,
+            moveX: 0,
+            moveY: 0
+        };
+        // 瞄准点数据（核心修复：全局统一瞄准点，鼠标/触摸都修改这个值）
+        const aimData = {
+            aimX: screenWidth / 2, // 初始瞄准点在屏幕中心（玩家位置）
+            aimY: screenHeight / 2
+        };
+
+        // ========== 核心修复：瞄准逻辑重写 ==========
+        // 每帧实时更新枪口角度，确保永远对准瞄准点（玩家移动/瞄准点移动都会更新）
+        function updateAimAngle() {
+            player.aimAngle = Math.atan2(aimData.aimY - player.y, aimData.aimX - player.x);
+        }
+
+        // ========== 电脑端鼠标瞄准（修复坐标匹配） ==========
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            // 直接把鼠标位置设为瞄准点，1:1映射屏幕坐标
+            aimData.aimX = e.clientX - rect.left;
+            aimData.aimY = e.clientY - rect.top;
+        });
+        // 鼠标射击
+        canvas.addEventListener('mousedown', (e) => {
+            if (e.button === 0 && !isGameOver) startShoot();
+        });
+        canvas.addEventListener('mouseup', (e) => {
+            if (e.button === 0) stopShoot();
+        });
+
+        // ========== 手机端触摸瞄准（彻底重写，修复不动问题） ==========
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const touch = e.touches[0];
+            // 全屏幕都可以触摸瞄准，避免右半屏限制导致的操作不便
+            aimData.aimX = touch.clientX;
+            aimData.aimY = touch.clientY;
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const touch = e.touches[0];
+            // 手指滑到哪里，瞄准点就更新到哪里，实时映射
+            aimData.aimX = touch.clientX;
+            aimData.aimY = touch.clientY;
+        });
+
+        // ========== 虚拟摇杆事件（修复卡住问题） ==========
+        joystick.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const touch = e.touches[0];
+            const rect = joystick.getBoundingClientRect();
+            joystickData.active = true;
+            joystickData.centerX = rect.left + rect.width / 2;
+            joystickData.centerY = rect.top + rect.height / 2;
+        });
+
+        joystick.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!joystickData.active) return;
+            const touch = e.touches[0];
+            
+            const dx = touch.clientX - joystickData.centerX;
+            const dy = touch.clientY - joystickData.centerY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            const scale = dist > joystickData.maxDist ? joystickData.maxDist / dist : 1;
+            joystickData.moveX = dx * scale;
+            joystickData.moveY = dy * scale;
+            
+            joystickThumb.style.transform = `translate(calc(-50% + ${joystickData.moveX}px), calc(-50% + ${joystickData.moveY}px))`;
+        });
+
+        function resetJoystick() {
+            joystickData.active = false;
+            joystickData.moveX = 0;
+            joystickData.moveY = 0;
+            joystickThumb.style.transform = 'translate(-50%, -50%)';
+        }
+        joystick.addEventListener('touchend', resetJoystick);
+        joystick.addEventListener('touchcancel', resetJoystick);
+
+        // ========== 射击/换弹按钮事件 ==========
+        function startShoot() {
+            if (isGameOver) return;
+            shoot();
+            shootTimer = setInterval(shoot, 180);
+        }
+        function stopShoot() {
+            clearInterval(shootTimer);
+        }
+        // 射击按钮触摸事件
+        shootBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            startShoot();
+        });
+        shootBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            stopShoot();
+        });
+        shootBtn.addEventListener('touchcancel', stopShoot);
+        // 换弹按钮
+        reloadBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            reload();
+        });
+        reloadBtn.addEventListener('click', reload);
+        // 重启按钮
+        restartBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            restartGame();
+        });
+        restartBtn.addEventListener('click', restartGame);
+
+        // ========== 电脑端键盘兼容 ==========
+        window.addEventListener('keydown', (e) => {
+            keys[e.key.toLowerCase()] = true;
+            if (e.key.toLowerCase() === 'r') reload();
+            if (e.key === ' ' && isGameOver) restartGame();
+        });
+        window.addEventListener('keyup', (e) => {
+            keys[e.key.toLowerCase()] = false;
+        });
+
+        // ========== 游戏核心函数 ==========
+        // 射击函数
+        function shoot() {
+            if (player.ammo <= 0 || isGameOver) return;
+            player.ammo--;
+            updateUI();
+            
+            bullets.push({
+                x: player.x,
+                y: player.y,
+                size: 4,
+                speed: 12,
+                damage: 25,
+                angle: player.aimAngle // 用实时更新的瞄准角度发射子弹
+            });
+        }
+
+        // 换弹函数
+        function reload() {
+            if (isGameOver || player.ammo === player.maxAmmo || player.spareAmmo <= 0) return;
+            const need = player.maxAmmo - player.ammo;
+            const add = Math.min(need, player.spareAmmo);
+            player.ammo += add;
+            player.spareAmmo -= add;
+            updateUI();
+        }
+
+        // 敌人生成
+        function createEnemy() {
+            if (isGameOver) return;
+            let x, y;
+            const side = Math.floor(Math.random() * 4);
+            switch(side) {
+                case 0: x = Math.random() * screenWidth; y = -30; break;
+                case 1: x = screenWidth + 30; y = Math.random() * screenHeight; break;
+                case 2: x = Math.random() * screenWidth; y = screenHeight + 30; break;
+                case 3: x = -30; y = Math.random() * screenHeight; break;
+            }
+            enemies.push({
+                x: x,
+                y: y,
+                size: 30,
+                speed: 1.8 + Math.random() * 1,
+                hp: 50,
+                maxHp: 50,
+                damage: 3
+            });
+        }
+
+        // 碰撞检测
+        function isCollide(a, b) {
+            const dist = Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
+            return dist < (a.size + b.size) / 2;
+        }
+
+        // 更新玩家位置
+        function updatePlayer() {
+            if (isGameOver) return;
+            let moveX = 0;
+            let moveY = 0;
+
+            // 键盘控制
+            if (keys['w']) moveY -= player.speed;
+            if (keys['s']) moveY += player.speed;
+            if (keys['a']) moveX -= player.speed;
+            if (keys['d']) moveX += player.speed;
+
+            // 摇杆控制
+            if (joystickData.active) {
+                const angle = Math.atan2(joystickData.moveY, joystickData.moveX);
+                moveX += Math.cos(angle) * player.speed;
+                moveY += Math.sin(angle) * player.speed;
+            }
+
+            // 限制玩家在屏幕内
+            player.x = Math.max(player.size/2, Math.min(screenWidth - player.size/2, player.x + moveX));
+            player.y = Math.max(player.size/2, Math.min(screenHeight - player.size/2, player.y + moveY));
+        }
+
+        // 更新子弹
+        function updateBullets() {
+            bullets = bullets.filter(bullet => {
+                bullet.x += Math.cos(bullet.angle) * bullet.speed;
+                bullet.y += Math.sin(bullet.angle) * bullet.speed;
+
+                // 移除出屏子弹
+                if (bullet.x < 0 || bullet.x > screenWidth || bullet.y < 0 || bullet.y > screenHeight) {
+                    return false;
+                }
+
+                // 子弹击中敌人
+                let hit = false;
+                enemies = enemies.filter(enemy => {
+                    if (isCollide(bullet, enemy)) {
+                        enemy.hp -= bullet.damage;
+                        hit = true;
+                        if (enemy.hp <= 0) {
+                            killCount++;
+                            updateUI();
+                            return false;
+                        }
+                    }
+                    return true;
+                });
+                return !hit;
+            });
+        }
+
+        // 更新敌人
+        function updateEnemies() {
+            if (isGameOver) return;
+            enemies.forEach(enemy => {
+                const dx = player.x - enemy.x;
+                const dy = player.y - enemy.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                enemy.x += (dx / dist) * enemy.speed;
+                enemy.y += (dy / dist) * enemy.speed;
+
+                // 敌人攻击玩家
+                if (isCollide(enemy, player)) {
+                    player.hp -= enemy.damage;
+                    updateUI();
+                    if (player.hp <= 0) {
+                        gameOver();
+                    }
+                }
+            });
+        }
+
+        // 绘制函数
+        function draw() {
+            ctx.clearRect(0, 0, screenWidth, screenHeight);
+
+            // 绘制玩家
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            ctx.rotate(player.aimAngle); // 用实时更新的角度旋转枪口
+            // 玩家身体
+            ctx.fillStyle = '#1e90ff';
+            ctx.beginPath();
+            ctx.arc(0, 0, player.size/2, 0, Math.PI * 2);
+            ctx.fill();
+            // 枪口
+            ctx.fillStyle = '#333';
+            ctx.fillRect(0, -3, player.size, 6);
+            ctx.restore();
+
+            // 绘制玩家血条
+            ctx.fillStyle = '#ff0000';
+            ctx.fillRect(player.x - player.size/2, player.y - player.size/2 - 10, player.size, 4);
+            ctx.fillStyle = '#00ff00';
+            ctx.fillRect(player.x - player.size/2, player.y - player.size/2 - 10, player.size * (player.hp / player.maxHp), 4);
+
+            // 绘制子弹
+            ctx.fillStyle = '#ffd700';
+            bullets.forEach(bullet => {
+                ctx.beginPath();
+                ctx.arc(bullet.x, bullet.y, bullet.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // 绘制敌人
+            enemies.forEach(enemy => {
+                ctx.fillStyle = '#ff4444';
+                ctx.beginPath();
+                ctx.arc(enemy.x, enemy.y, enemy.size/2, 0, Math.PI * 2);
+                ctx.fill();
+                // 敌人血条
+                ctx.fillStyle = '#ff0000';
+                ctx.fillRect(enemy.x - enemy.size/2, enemy.y - enemy.size/2 - 10, enemy.size, 4);
+                ctx.fillStyle = '#00ff00';
+                ctx.fillRect(enemy.x - enemy.size/2, enemy.y - enemy.size/2 - 10, enemy.size * (enemy.hp / enemy.maxHp), 4);
+            });
+
+            // 游戏结束画面
+            if (isGameOver) {
+                ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                ctx.fillRect(0, 0, screenWidth, screenHeight);
+                ctx.fillStyle = '#fff';
+                ctx.textAlign = 'center';
+                ctx.font = 'bold 48px Arial';
+                ctx.fillText('游戏结束', screenWidth/2, screenHeight/2 - 40);
+                ctx.font = '24px Arial';
+                ctx.fillText(`最终击杀: ${killCount}`, screenWidth/2, screenHeight/2 + 10);
+            }
+        }
+
+        // UI更新
+        function updateUI() {
+            hpText.textContent = Math.max(0, player.hp);
+            killText.textContent = killCount;
+            ammoText.textContent = `${player.ammo}/${player.spareAmmo}`;
+        }
+
+        // 游戏结束
+        function gameOver() {
+            isGameOver = true;
+            clearInterval(enemyTimer);
+            stopShoot();
+            restartBtn.style.display = 'block';
+        }
+
+        // 重启游戏
+        function restartGame() {
+            player.x = screenWidth / 2;
+            player.y = screenHeight / 2;
+            player.hp = player.maxHp;
+            player.ammo = player.maxAmmo;
+            player.spareAmmo = 90;
+            bullets = [];
+            enemies = [];
+            killCount = 0;
+            isGameOver = false;
+            // 重启后重置瞄准点
+            aimData.aimX = screenWidth / 2;
+            aimData.aimY = screenHeight / 2;
+            restartBtn.style.display = 'none';
+            updateUI();
+            clearInterval(enemyTimer);
+            enemyTimer = setInterval(createEnemy, 1500);
+        }
+
+        // ========== 游戏主循环（核心：每帧更新瞄准角度） ==========
+        function gameLoop() {
+            updatePlayer();
+            updateAimAngle(); // 每帧都更新枪口角度，彻底解决不动问题
+            updateBullets();
+            updateEnemies();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // 启动游戏
+        enemyTimer = setInterval(createEnemy, 1500);
+        gameLoop();
+        updateUI();
+    </script>
+</body>
+</html>

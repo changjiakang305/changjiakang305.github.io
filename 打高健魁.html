@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>暴打高建魁 - 八六班专属</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        html, body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            overflow-x: hidden;
+        }
+        /* 地洞样式 */
+        .hole {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: inset 0 10px 15px rgba(0,0,0,0.8), 0 5px 10px rgba(0,0,0,0.5);
+        }
+        /* 猪（高建魁）样式 */
+        .pig {
+            position: absolute;
+            bottom: -100%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: clamp(3rem, 10vw, 6rem);
+            cursor: pointer;
+            transition: bottom 0.2s ease-out;
+            z-index: 10;
+        }
+        .pig.show {
+            bottom: 10%;
+        }
+        /* 打中动画 */
+        .pig.hit {
+            animation: hit 0.3s ease-out;
+        }
+        @keyframes hit {
+            0% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.2); opacity: 0.7; }
+            100% { transform: translateX(-50%) scale(0); opacity: 0; }
+        }
+        /* 冒出来的弹动动画 */
+        @keyframes pop {
+            0% { bottom: -100%; }
+            70% { bottom: 15%; }
+            100% { bottom: 10%; }
+        }
+        .pig.show {
+            animation: pop 0.2s ease-out forwards;
+        }
+        /* 按钮动画 */
+        .btn {
+            transition: all 0.2s ease;
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+        .btn:hover {
+            box-shadow: 0 10px 20px rgba(244, 63, 94, 0.4);
+        }
+    </style>
+</head>
+<body class="text-white font-sans">
+    <div class="container mx-auto px-4 py-6 max-w-3xl min-h-screen flex flex-col">
+        <!-- 顶部标题 -->
+        <div class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-bold text-rose-500 mb-2">
+                🐖 暴打高建魁 🐖
+            </h1>
+            <p class="text-lg text-amber-400 font-semibold">八六班专属打地鼠小游戏</p>
+        </div>
+
+        <!-- 计分&倒计时区域 -->
+        <div class="flex justify-between items-center mb-8 px-4">
+            <div class="text-center">
+                <p class="text-gray-400 text-sm mb-1">当前分数</p>
+                <p id="score" class="text-3xl md:text-4xl font-bold text-emerald-400">0</p>
+            </div>
+            <div class="text-center">
+                <p class="text-gray-400 text-sm mb-1">剩余时间</p>
+                <p id="time" class="text-3xl md:text-4xl font-bold text-rose-500">60s</p>
+            </div>
+        </div>
+
+        <!-- 游戏核心区域：9个地洞 3x3网格 -->
+        <div id="game-grid" class="grid grid-cols-3 gap-4 md:gap-6 flex-1 mb-8">
+            <div class="aspect-square hole" data-index="0">
+                <div class="pig" data-index="0">🐖</div>
+            </div>
+            <div class="aspect-square hole" data-index="1">
+                <div class="pig" data-index="1">🐖</div>
+            </div>
+            <div class="aspect-square hole" data-index="2">
+                <div class="pig" data-index="2">🐖</div>
+            </div>
+            <div class="aspect-square hole" data-index="3">
+                <div class="pig" data-index="3">🐖</div>
+            </div>
+            <div class="aspect-square hole" data-index="4">
+                <div class="pig" data-index="4">🐖</div>
+            </div>
+            <div class="aspect-square hole" data-index="5">
+                <div class="pig" data-index="5">🐖</div>
+            </div>
+            <div class="aspect-square hole" data-index="6">
+                <div class="pig" data-index="6">🐖</div>
+            </div>
+            <div class="aspect-square hole" data-index="7">
+                <div class="pig" data-index="7">🐖</div>
+            </div>
+            <div class="aspect-square hole" data-index="8">
+                <div class="pig" data-index="8">🐖</div>
+            </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="text-center mb-6">
+            <button id="start-btn" class="btn bg-gradient-to-r from-rose-500 to-pink-600 text-white text-xl font-bold px-10 py-4 rounded-full">
+                <i class="fa-solid fa-play mr-2"></i>开始游戏
+            </button>
+        </div>
+
+        <!-- 底部提示 -->
+        <div class="text-center text-gray-400 text-sm mt-auto">
+            <p>点击冒出来的高建魁（猪头）得分，手速越快分数越高！</p>
+        </div>
+    </div>
+
+    <script>
+        // 游戏配置
+        const CONFIG = {
+            gameTime: 60, // 游戏总时长（秒）
+            minShowTime: 600, // 猪头最短停留时间（毫秒）
+            maxShowTime: 1200, // 猪头最长停留时间（毫秒）
+            initSpeed: 800, // 初始出洞间隔（毫秒）
+            minSpeed: 300, // 最快出洞间隔（毫秒）
+            scorePerHit: 10 // 每次打中得分
+        };
+
+        // 游戏状态
+        let gameState = {
+            isPlaying: false,
+            score: 0,
+            timeLeft: CONFIG.gameTime,
+            timer: null,
+            popTimer: null,
+            currentHole: -1,
+            canHit: false
+        };
+
+        // 页面元素
+        const elements = {
+            scoreText: document.getElementById('score'),
+            timeText: document.getElementById('time'),
+            startBtn: document.getElementById('start-btn'),
+            pigs: document.querySelectorAll('.pig'),
+            holes: document.querySelectorAll('.hole')
+        };
+
+        // 1. 初始化游戏
+        function initGame() {
+            gameState.isPlaying = false;
+            gameState.score = 0;
+            gameState.timeLeft = CONFIG.gameTime;
+            gameState.currentHole = -1;
+            gameState.canHit = false;
+
+            // 重置UI
+            elements.scoreText.textContent = gameState.score;
+            elements.timeText.textContent = `${gameState.timeLeft}s`;
+            elements.startBtn.innerHTML = '<i class="fa-solid fa-play mr-2"></i>开始游戏';
+            elements.startBtn.classList.remove('from-amber-500', 'to-orange-600');
+            elements.startBtn.classList.add('from-rose-500', 'to-pink-600');
+
+            // 隐藏所有猪头
+            elements.pigs.forEach(pig => {
+                pig.classList.remove('show', 'hit');
+            });
+
+            // 清除定时器
+            clearInterval(gameState.timer);
+            clearTimeout(gameState.popTimer);
+        }
+
+        // 2. 随机出洞
+        function popPig() {
+            if (!gameState.isPlaying) return;
+
+            // 隐藏上一个猪头
+            if (gameState.currentHole !== -1) {
+                elements.pigs[gameState.currentHole].classList.remove('show');
+            }
+
+            // 随机新洞（不能和上一个一样）
+            let newHole;
+            do {
+                newHole = Math.floor(Math.random() * 9);
+            } while (newHole === gameState.currentHole);
+
+            gameState.currentHole = newHole;
+            gameState.canHit = true;
+
+            // 显示猪头
+            const currentPig = elements.pigs[newHole];
+            currentPig.classList.remove('hit');
+            currentPig.classList.add('show');
+
+            // 随机停留时间后自动消失
+            const showTime = CONFIG.minShowTime + Math.random() * (CONFIG.maxShowTime - CONFIG.minShowTime);
+            setTimeout(() => {
+                if (gameState.isPlaying && gameState.currentHole === newHole) {
+                    currentPig.classList.remove('show');
+                    gameState.canHit = false;
+                }
+            }, showTime);
+
+            // 计算下一次出洞的间隔（随时间加快，难度递增）
+            const speedReduce = (CONFIG.gameTime - gameState.timeLeft) * 8;
+            const nextInterval = Math.max(CONFIG.minSpeed, CONFIG.initSpeed - speedReduce);
+            gameState.popTimer = setTimeout(popPig, nextInterval);
+        }
+
+        // 3. 打中猪头处理
+        elements.pigs.forEach(pig => {
+            // 支持鼠标点击和触屏点击
+            ['click', 'touchstart'].forEach(eventType => {
+                pig.addEventListener(eventType, (e) => {
+                    e.preventDefault(); // 防止触屏双击缩放
+                    const index = parseInt(pig.dataset.index);
+
+                    // 只有游戏进行中、当前洞、可击中时才加分
+                    if (!gameState.isPlaying || !gameState.canHit || index !== gameState.currentHole) return;
+
+                    // 打中特效
+                    pig.classList.add('hit');
+                    pig.classList.remove('show');
+
+                    // 加分
+                    gameState.score += CONFIG.scorePerHit;
+                    elements.scoreText.textContent = gameState.score;
+
+                    // 禁止重复点击
+                    gameState.canHit = false;
+                });
+            });
+        });
+
+        // 4. 开始游戏
+        elements.startBtn.addEventListener('click', () => {
+            // 如果正在游戏，点击重开
+            if (gameState.isPlaying) {
+                initGame();
+                return;
+            }
+
+            // 初始化并开始游戏
+            initGame();
+            gameState.isPlaying = true;
+            elements.startBtn.innerHTML = '<i class="fa-solid fa-refresh mr-2"></i>重新开始';
+            elements.startBtn.classList.remove('from-rose-500', 'to-pink-600');
+            elements.startBtn.classList.add('from-amber-500', 'to-orange-600');
+
+            // 开始倒计时
+            gameState.timer = setInterval(() => {
+                gameState.timeLeft--;
+                elements.timeText.textContent = `${gameState.timeLeft}s`;
+
+                // 时间到，游戏结束
+                if (gameState.timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+
+            // 开始出猪头
+            popPig();
+        });
+
+        // 5. 游戏结束
+        function endGame() {
+            initGame();
+            alert(`游戏结束！你一共打中了 ${gameState.score / CONFIG.scorePerHit} 次高建魁，最终得分：${gameState.score} 分！`);
+        }
+
+        // 页面加载时初始化
+        window.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>

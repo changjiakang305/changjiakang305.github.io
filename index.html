@@ -2,11 +2,10 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>九一专属平台</title>
-    <!-- 引入Tailwind CSS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>八六班专属小游戏平台</title>
+    <!-- 引入公共CDN，无本地依赖 -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入图标 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -15,43 +14,8 @@
             box-sizing: border-box;
         }
         html, body {
-            height: 100%;
-            overflow: hidden;
+            min-height: 100vh;
             background: #0f172a;
-        }
-        /* 抖音视频滑动容器 */
-        .video-container {
-            height: calc(100vh - 60px);
-            overflow-y: scroll;
-            scroll-snap-type: y mandatory;
-            scrollbar-width: none;
-        }
-        .video-container::-webkit-scrollbar {
-            display: none;
-        }
-        .video-item {
-            height: calc(100vh - 60px);
-            scroll-snap-align: start;
-            position: relative;
-            background: #000;
-        }
-        .video-item video {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-        /* 底部导航选中动画 */
-        .nav-item.active {
-            color: #f43f5e;
-            transform: scale(1.05);
-        }
-        /* 游戏卡片悬停效果 */
-        .game-card {
-            transition: all 0.3s ease;
-        }
-        .game-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 30px rgba(244, 63, 94, 0.4);
         }
         /* 标题呼吸动画 */
         .title-breath {
@@ -61,6 +25,14 @@
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.02); }
         }
+        /* 游戏卡片悬停效果 */
+        .game-card {
+            transition: all 0.3s ease;
+        }
+        .game-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(244, 63, 94, 0.4);
+        }
         /* 加载动画 */
         .loading-spin {
             animation: spin 1s linear infinite;
@@ -69,293 +41,180 @@
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
+        /* 渐变配色数组 */
+        .gradient-0 { background: linear-gradient(135deg, #f43f5e, #ec4899); }
+        .gradient-1 { background: linear-gradient(135deg, #ec4899, #a855f7); }
+        .gradient-2 { background: linear-gradient(135deg, #8b5cf6, #3b82f6); }
+        .gradient-3 { background: linear-gradient(135deg, #0ea5e9, #06b6d4); }
+        .gradient-4 { background: linear-gradient(135deg, #10b981, #22c55e); }
+        .gradient-5 { background: linear-gradient(135deg, #84cc16, #eab308); }
+        .gradient-6 { background: linear-gradient(135deg, #f59e0b, #ef4444); }
     </style>
 </head>
 <body class="text-white font-sans">
-    <!-- 页面主容器 -->
-    <div class="w-full h-full flex flex-col">
-        <!-- 顶部标题区（仅游戏页显示） -->
-        <header id="game-header" class="w-full px-4 py-6 text-center title-breath block">
-            <h1 class="text-3xl md:text-5xl font-bold text-rose-500 mb-2 leading-tight">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- 顶部大标题区域 -->
+        <div class="title-breath text-center mb-12">
+            <h1 class="text-3xl md:text-5xl font-bold text-rose-500 mb-3 leading-tight">
                 爱在九一，乐在九一
             </h1>
-            <h2 class="text-2xl md:text-4xl font-bold text-amber-400 mb-3">
-                九一自创小游戏&视频平台
+            <h2 class="text-2xl md:text-4xl font-bold text-amber-400 mb-4">
+                九一自创小游戏平台
             </h2>
-            <p class="text-lg md:text-xl font-semibold text-emerald-400 mb-1">
+            <p class="text-lg md:text-xl font-semibold text-emerald-400 mb-2">
                 八六班专属
             </p>
             <p class="text-base md:text-lg font-medium text-white opacity-90">
                 谁不服为班级上交五十元，我贪污四十九块九毛九！！！！
             </p>
-        </header>
-
-        <!-- 核心内容区 -->
-        <main class="flex-1 w-full overflow-hidden">
-            <!-- 游戏页面 -->
-            <section id="game-page" class="w-full h-full overflow-y-auto px-4 py-4 block">
-                <h3 class="text-2xl font-bold text-center text-blue-400 mb-6">
-                    <i class="fa-solid fa-gamepad mr-2"></i>班级小游戏合集
-                </h3>
-                <!-- 游戏加载状态 -->
-                <div id="game-loading" class="w-full py-20 text-center">
-                    <div class="loading-spin inline-block w-10 h-10 border-4 border-gray-600 border-t-rose-500 rounded-full mb-3"></div>
-                    <p class="text-gray-400">正在扫描游戏文件...</p>
-                </div>
-                <!-- 游戏空状态 -->
-                <div id="game-empty" class="w-full py-20 text-center hidden">
-                    <i class="fa-solid fa-folder-open text-5xl text-gray-600 mb-3"></i>
-                    <p class="text-gray-400">暂无游戏文件，请上传 index1.html、index2.html 到同一目录</p>
-                </div>
-                <!-- 游戏网格 -->
-                <div id="game-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 hidden"></div>
-            </section>
-
-            <!-- 视频页面（抖音风格） -->
-            <section id="video-page" class="w-full h-full hidden">
-                <!-- 视频滑动容器 -->
-                <div id="video-container" class="video-container">
-                    <!-- 视频加载状态 -->
-                    <div id="video-loading" class="w-full h-full flex flex-col items-center justify-center">
-                        <div class="loading-spin inline-block w-12 h-12 border-4 border-gray-600 border-t-rose-500 rounded-full mb-4"></div>
-                        <p class="text-gray-400">正在扫描视频文件...</p>
-                    </div>
-                    <!-- 视频空状态 -->
-                    <div id="video-empty" class="w-full h-full flex flex-col items-center justify-center hidden">
-                        <i class="fa-solid fa-video-slash text-5xl text-gray-600 mb-4"></i>
-                        <p class="text-gray-400">暂无视频文件，请上传 shipping1.mp4、shipping2.mp4 到同一目录</p>
-                    </div>
-                    <!-- 视频列表将通过JS自动生成 -->
-                </div>
-            </section>
-        </main>
-
-        <!-- 底部固定提示 -->
-        <div class="w-full text-center py-1 bg-slate-800 text-gray-300 text-sm">
-            看到这个网站除了L男其他的请别笑
         </div>
 
-        <!-- 底部导航栏 -->
-        <nav class="w-full h-14 bg-slate-900 border-t border-slate-800 flex items-center justify-around">
-            <div id="nav-game" class="nav-item active flex flex-col items-center justify-center cursor-pointer w-full h-full">
-                <i class="fa-solid fa-gamepad text-xl mb-1"></i>
-                <span class="text-xs font-medium">游戏</span>
+        <!-- 游戏列表区域 -->
+        <div class="mb-10">
+            <h3 class="text-2xl font-bold text-center text-blue-400 mb-8">
+                <i class="fa-solid fa-gamepad mr-2"></i>班级小游戏合集
+            </h3>
+
+            <!-- 加载状态 -->
+            <div id="loading" class="w-full py-20 text-center">
+                <div class="loading-spin inline-block w-10 h-10 border-4 border-gray-600 border-t-rose-500 rounded-full mb-3"></div>
+                <p class="text-gray-400">正在扫描游戏文件...</p>
             </div>
-            <div id="nav-video" class="nav-item flex flex-col items-center justify-center cursor-pointer w-full h-full">
-                <i class="fa-solid fa-video text-xl mb-1"></i>
-                <span class="text-xs font-medium">视频</span>
+
+            <!-- 空状态（无游戏时显示） -->
+            <div id="empty-state" class="w-full py-20 text-center hidden">
+                <i class="fa-solid fa-folder-open text-5xl text-gray-600 mb-3"></i>
+                <p class="text-gray-400 mb-2">暂无游戏文件</p>
+                <p class="text-sm text-gray-500">请将.html格式的游戏文件上传到本仓库同一目录，刷新页面即可自动加载</p>
             </div>
-        </nav>
+
+            <!-- 游戏卡片网格 -->
+            <div id="game-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 hidden"></div>
+        </div>
+
+        <!-- 底部固定提示 -->
+        <div class="w-full text-center py-3 mt-20 bg-slate-800/50 rounded-lg text-gray-300 text-sm">
+            看到这个网站除了L男其他的请别笑
+        </div>
     </div>
 
     <script>
-        // 全局配置
+        // 配置项（无需修改，自动适配）
         const CONFIG = {
-            maxGameCount: 100, // 最大扫描游戏数量
-            maxVideoCount: 100, // 最大扫描视频数量
-            gamePrefix: 'index', // 游戏文件前缀
+            excludeFiles: ['index.html'], // 排除的主文件
             gameSuffix: '.html', // 游戏文件后缀
-            videoPrefix: 'shipping', // 视频文件前缀
-            videoSuffix: '.mp4' // 视频文件后缀
-        };
-
-        // 全局状态
-        let state = {
-            activeTab: 'game',
-            gameList: [],
-            videoList: [],
-            currentVideoIndex: 0,
-            isVideoPlaying: false
+            maxFallbackCount: 100 // 降级模式最大扫描数量
         };
 
         // 页面元素
         const elements = {
-            gameHeader: document.getElementById('game-header'),
-            gamePage: document.getElementById('game-page'),
-            videoPage: document.getElementById('video-page'),
-            gameLoading: document.getElementById('game-loading'),
-            gameEmpty: document.getElementById('game-empty'),
-            gameGrid: document.getElementById('game-grid'),
-            videoContainer: document.getElementById('video-container'),
-            videoLoading: document.getElementById('video-loading'),
-            videoEmpty: document.getElementById('video-empty'),
-            navGame: document.getElementById('nav-game'),
-            navVideo: document.getElementById('nav-video')
+            loading: document.getElementById('loading'),
+            emptyState: document.getElementById('empty-state'),
+            gameGrid: document.getElementById('game-grid')
         };
 
-        // 1. 自动扫描游戏文件
-        async function scanGameFiles() {
-            elements.gameLoading.classList.remove('hidden');
-            elements.gameGrid.classList.add('hidden');
-            elements.gameEmpty.classList.add('hidden');
-            state.gameList = [];
+        // 1. 解析当前GitHub仓库信息（自动获取）
+        function getRepoInfo() {
+            const host = window.location.hostname;
+            const path = window.location.pathname;
+            const pathParts = path.split('/').filter(Boolean);
 
-            for (let i = 1; i <= CONFIG.maxGameCount; i++) {
-                const fileName = `${CONFIG.gamePrefix}${i}${CONFIG.gameSuffix}`;
+            // 适配两种GitHub Pages域名
+            if (host.endsWith('.github.io')) {
+                const username = host.split('.')[0];
+                // 根仓库：xxx.github.io
+                if (pathParts.length === 0) {
+                    return { username, repo: `${username}.github.io` };
+                }
+                // 项目仓库：xxx.github.io/仓库名
+                else {
+                    return { username, repo: pathParts[0] };
+                }
+            }
+            // 本地测试/自定义域名，返回null触发降级模式
+            return null;
+        }
+
+        // 2. 通过GitHub API获取仓库根目录所有文件（核心功能）
+        async function getGameFilesFromAPI() {
+            const repoInfo = getRepoInfo();
+            if (!repoInfo) return null;
+
+            try {
+                const apiUrl = `https://api.github.com/repos/${repoInfo.username}/${repoInfo.repo}/contents/`;
+                const res = await fetch(apiUrl);
+                if (!res.ok) return null;
+
+                const fileList = await res.json();
+                // 过滤：仅保留.html后缀、不在排除列表里的文件
+                const gameFiles = fileList.filter(file => {
+                    return file.name.toLowerCase().endsWith(CONFIG.gameSuffix)
+                        && !CONFIG.excludeFiles.includes(file.name.toLowerCase());
+                });
+
+                // 格式化数据
+                return gameFiles.map(file => ({
+                    name: file.name.replace(CONFIG.gameSuffix, ''), // 去掉.html后缀作为显示名称
+                    url: file.name,
+                    size: file.size
+                }));
+            } catch (e) {
+                console.log('API获取失败，启用降级模式', e);
+                return null;
+            }
+        }
+
+        // 3. 降级模式：按数字顺序扫描index1.html、index2.html...（本地测试/API失败时使用）
+        async function getGameFilesFallback() {
+            const gameList = [];
+            for (let i = 1; i <= CONFIG.maxFallbackCount; i++) {
+                const fileName = `index${i}${CONFIG.gameSuffix}`;
                 try {
                     const res = await fetch(fileName, { method: 'HEAD' });
                     if (res.ok) {
-                        state.gameList.push({
-                            id: i,
+                        gameList.push({
                             name: `游戏 ${i}`,
                             url: fileName
                         });
                     } else {
-                        break; // 遇到404停止扫描
+                        break; // 遇到不存在的文件停止扫描
                     }
                 } catch (e) {
-                    break; // 网络错误停止扫描
+                    break;
                 }
             }
-
-            elements.gameLoading.classList.add('hidden');
-            if (state.gameList.length === 0) {
-                elements.gameEmpty.classList.remove('hidden');
-            } else {
-                renderGameList();
-                elements.gameGrid.classList.remove('hidden');
-            }
+            return gameList;
         }
 
-        // 2. 渲染游戏列表
-        function renderGameList() {
-            elements.gameGrid.innerHTML = state.gameList.map(game => `
-                <a href="${game.url}" target="_blank" class="game-card bg-gradient-to-br from-rose-600 to-pink-700 rounded-xl p-6 text-center block">
+        // 4. 渲染游戏列表
+        function renderGameList(gameList) {
+            elements.loading.classList.add('hidden');
+            if (gameList.length === 0) {
+                elements.emptyState.classList.remove('hidden');
+                return;
+            }
+
+            // 生成卡片HTML，自动循环渐变配色
+            elements.gameGrid.innerHTML = gameList.map((game, index) => `
+                <a href="${game.url}" target="_blank" class="game-card gradient-${index % 7} rounded-xl p-6 text-center block">
                     <i class="fa-solid fa-gamepad text-3xl mb-3"></i>
-                    <p class="text-xl font-bold">${game.name}</p>
+                    <p class="text-xl font-bold break-all">${game.name}</p>
                 </a>
             `).join('');
+
+            elements.gameGrid.classList.remove('hidden');
         }
 
-        // 3. 自动扫描视频文件
-        async function scanVideoFiles() {
-            elements.videoLoading.classList.remove('hidden');
-            elements.videoEmpty.classList.add('hidden');
-            state.videoList = [];
-
-            for (let i = 1; i <= CONFIG.maxVideoCount; i++) {
-                const fileName = `${CONFIG.videoPrefix}${i}${CONFIG.videoSuffix}`;
-                try {
-                    const res = await fetch(fileName, { method: 'HEAD' });
-                    if (res.ok) {
-                        state.videoList.push({
-                            id: i,
-                            url: fileName
-                        });
-                    } else {
-                        break; // 遇到404停止扫描
-                    }
-                } catch (e) {
-                    break; // 网络错误停止扫描
-                }
+        // 5. 页面加载时执行
+        window.addEventListener('DOMContentLoaded', async () => {
+            // 优先用GitHub API获取所有游戏文件
+            let gameList = await getGameFilesFromAPI();
+            // API失败时启用降级模式
+            if (!gameList) {
+                gameList = await getGameFilesFallback();
             }
-
-            elements.videoLoading.classList.add('hidden');
-            if (state.videoList.length === 0) {
-                elements.videoEmpty.classList.remove('hidden');
-            } else {
-                renderVideoList();
-                initVideoEvent();
-            }
-        }
-
-        // 4. 渲染视频列表
-        function renderVideoList() {
-            elements.videoContainer.innerHTML = state.videoList.map((video, index) => `
-                <div class="video-item" data-index="${index}">
-                    <video 
-                        src="${video.url}" 
-                        loop 
-                        muted 
-                        playsinline
-                        preload="metadata"
-                        class="video-player"
-                        data-index="${index}"
-                    ></video>
-                    <!-- 视频播放按钮 -->
-                    <div class="play-btn absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-black/30 rounded-full flex items-center justify-center hidden">
-                        <i class="fa-solid fa-play text-white text-3xl ml-1"></i>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // 5. 初始化视频事件
-        function initVideoEvent() {
-            const videoPlayers = document.querySelectorAll('.video-player');
-            const playBtns = document.querySelectorAll('.play-btn');
-
-            // 视频点击播放/暂停
-            videoPlayers.forEach((video, index) => {
-                video.addEventListener('click', () => {
-                    if (video.paused) {
-                        video.play();
-                        playBtns[index].classList.add('hidden');
-                        state.isVideoPlaying = true;
-                    } else {
-                        video.pause();
-                        playBtns[index].classList.remove('hidden');
-                        state.isVideoPlaying = false;
-                    }
-                });
-            });
-
-            // 滑动切换视频
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    const video = entry.target.querySelector('.video-player');
-                    const index = parseInt(entry.target.dataset.index);
-                    if (entry.isIntersecting) {
-                        state.currentVideoIndex = index;
-                        video.play().catch(() => {});
-                        playBtns[index].classList.add('hidden');
-                        state.isVideoPlaying = true;
-                    } else {
-                        video.pause();
-                        playBtns[index].classList.remove('hidden');
-                        state.isVideoPlaying = false;
-                    }
-                });
-            }, { threshold: 0.8 });
-
-            document.querySelectorAll('.video-item').forEach(item => {
-                observer.observe(item);
-            });
-        }
-
-        // 6. Tab切换功能
-        function switchTab(tabName) {
-            if (state.activeTab === tabName) return;
-
-            // 更新导航状态
-            if (tabName === 'game') {
-                elements.navGame.classList.add('active');
-                elements.navVideo.classList.remove('active');
-                elements.gamePage.classList.remove('hidden');
-                elements.videoPage.classList.add('hidden');
-                elements.gameHeader.classList.remove('hidden');
-            } else if (tabName === 'video') {
-                elements.navVideo.classList.add('active');
-                elements.navGame.classList.remove('active');
-                elements.videoPage.classList.remove('hidden');
-                elements.gamePage.classList.add('hidden');
-                elements.gameHeader.classList.add('hidden');
-                // 切换到视频页时扫描视频
-                if (state.videoList.length === 0) {
-                    scanVideoFiles();
-                }
-            }
-
-            state.activeTab = tabName;
-        }
-
-        // 7. 绑定导航点击事件
-        elements.navGame.addEventListener('click', () => switchTab('game'));
-        elements.navVideo.addEventListener('click', () => switchTab('video'));
-
-        // 8. 页面加载时扫描游戏
-        window.addEventListener('DOMContentLoaded', () => {
-            scanGameFiles();
+            // 渲染页面
+            renderGameList(gameList);
         });
     </script>
 </body>
