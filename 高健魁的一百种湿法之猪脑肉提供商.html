@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>高健魁的一百种喜法二号</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    font-family: "Microsoft YaHei", system-ui, sans-serif;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #fff8e6;
+    /* 禁止页面整体滑动 */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+/* 根容器 - 稳定分层布局，彻底解决遮挡 */
+#app {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    max-height: 100vh;
+}
+
+/* 固定超大标题 - 永不压缩、永不遮挡 */
+.game-title {
+    width: 100%;
+    padding: 10px 8px;
+    background: linear-gradient(135deg, #cc0000, #ff3333);
+    text-align: center;
+    flex-shrink: 0;
+    border-bottom: 3px solid #ffd700;
+    z-index: 10;
+}
+.game-title h1 {
+    color: #fff;
+    font-size: clamp(16px, 4.5vw, 28px);
+    font-weight: 900;
+    text-shadow: 2px 2px 0 #000;
+    line-height: 1.2;
+    margin: 0;
+}
+
+/* 固定滚动广告条 - 优化流畅度，永不遮挡 */
+.ad-banner {
+    width: 100%;
+    background: #ffd700;
+    padding: 8px 0;
+    flex-shrink: 0;
+    overflow: hidden;
+    position: relative;
+    z-index: 10;
+}
+.ad-scroll {
+    display: inline-block;
+    white-space: nowrap;
+    animation: scroll 12s linear infinite;
+    color: #cc0000;
+    font-weight: 900;
+    font-size: clamp(14px, 4vw, 18px);
+    will-change: transform;
+}
+@keyframes scroll {
+    0% { transform: translateX(100vw); }
+    100% { transform: translateX(-150%); }
+}
+
+/* 游戏主内容区 - 自适应剩余空间，完美滚动，永不遮挡 */
+.game-main {
+    flex: 1;
+    width: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 16px 12px;
+    flex-shrink: 1;
+    /* 键盘弹出时自动压缩 */
+    min-height: 0;
+}
+
+/* 场景通用样式 - 修复布局不协调 */
+.scene {
+    display: none;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    min-height: 100%;
+    padding-bottom: 10px;
+}
+.scene.active {
+    display: flex;
+}
+
+.scene-header {
+    text-align: center;
+    width: 100%;
+}
+.scene-header h2 {
+    color: #d95319;
+    font-size: clamp(18px, 4vw, 24px);
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
+.scene-tip {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+/* 进度条 - 适配全屏幕 */
+.progress-wrap {
+    width: 100%;
+    height: 12px;
+    background: #f0f0f0;
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(to right, #ff9500, #ff3d00);
+    transition: width 0.3s ease;
+    will-change: width;
+}
+
+/* 角色展示 - 自适应大小，永不溢出 */
+.role-display {
+    font-size: clamp(50px, 12vw, 80px);
+    text-align: center;
+    transition: all 0.2s ease;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+/* 按钮通用样式 - 修复无效点击，符合手机端无障碍标准 */
+.btn {
+    padding: 0 20px;
+    min-height: 48px;
+    border: none;
+    border-radius: 12px;
+    background: #ff7b29;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    width: 100%;
+    /* 修复手机端点击延迟 */
+    touch-action: manipulation;
+    /* 禁止文本选中 */
+    user-select: none;
+    /* 禁用按钮彻底不可点击 */
+}
+.btn:active {
+    transform: scale(0.95);
+    background: #e66a1e;
+}
+.btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    /* 彻底禁用点击 */
+    pointer-events: none;
+}
+.btn-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    width: 100%;
+    flex-shrink: 0;
+}
+
+/* 卡片网格 - 修复小屏挤压，自动适配 */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    width: 100%;
+    flex-shrink: 0;
+}
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px 12px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.card h3 {
+    font-size: 16px;
+    color: #d95319;
+    margin: 0;
+    line-height: 1.2;
+}
+.card-icon {
+    font-size: 40px;
+    line-height: 1;
+}
+.card-num {
+    font-size: 18px;
+    font-weight: bold;
+    color: #cc0000;
+    margin: 4px 0;
+}
+
+/* 加工包装场景 - 修复布局不协调 */
+.pack-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+}
+.pack-box {
+    width: min(200px, 60vw);
+    height: min(200px, 60vw);
+    background: #fff;
+    border: 3px solid #cc0000;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex-shrink: 0;
+}
+.pack-ad {
+    font-size: clamp(12px, 3vw, 14px);
+    font-weight: 900;
+    color: #cc0000;
+    text-align: center;
+    margin-top: 10px;
+    display: none;
+    word-break: keep-all;
+}
+.pack-animation {
+    animation: bounce 0.3s ease;
+}
+@keyframes bounce {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* 摆摊场景 - 修复小屏换行、无效点击 */
+.market-area {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
+.stall {
+    background: #f5deb3;
+    border-radius: 12px;
+    padding: 20px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+.stall-sign {
+    background: #cc0000;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 900;
+    font-size: clamp(16px, 4vw, 18px);
+    text-align: center;
+    width: 100%;
+    word-break: keep-all;
+}
+.sale-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+    width: 100%;
+    background: white;
+    padding: 12px 15px;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+.sale-item {
+    text-align: center;
+}
+.sale-item h4 {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 4px;
+    font-weight: normal;
+}
+.sale-num {
+    font-size: 18px;
+    font-weight: bold;
+    color: #cc0000;
+    line-height: 1;
+}
+.guest-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+    gap: 12px;
+    width: 100%;
+    flex-shrink: 0;
+}
+.guest {
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 8px;
+    border-radius: 8px;
+    /* 扩大点击区域 */
+    touch-action: manipulation;
+}
+.guest:active {
+    transform: scale(0.9);
+    background: #fff3e6;
+}
+.guest-avatar {
+    font-size: clamp(40px, 10vw, 50px);
+    line-height: 1;
+}
+.guest-say {
+    font-size: 12px;
+    color: #333;
+    margin-top: 6px;
+    word-break: break-word;
+    line-height: 1.3;
+}
+
+/* 结局场景 */
+.end-area {
+    text-align: center;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+}
+.end-emoji {
+    font-size: clamp(80px, 20vw, 120px);
+    line-height: 1;
+}
+.end-text {
+    font-size: clamp(16px, 4vw, 18px);
+    line-height: 1.6;
+    color: #333;
+    word-break: break-word;
+}
+.end-ad {
+    background: #ffd700;
+    color: #cc0000;
+    padding: 15px;
+    border-radius: 12px;
+    font-weight: 900;
+    font-size: clamp(18px, 5vw, 20px);
+    width: 100%;
+    text-align: center;
+    word-break: keep-all;
+}
+
+/* 开屏广告弹窗 - 修复点击区域 */
+.ad-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+}
+.ad-modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 30px 20px;
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.ad-modal-title {
+    font-size: clamp(24px, 6vw, 30px);
+    font-weight: 900;
+    color: #cc0000;
+    margin-bottom: 20px;
+}
+.ad-modal-slogan {
+    font-size: clamp(18px, 5vw, 24px);
+    font-weight: 900;
+    color: #ff7b29;
+    margin-bottom: 30px;
+}
+.ad-close-btn {
+    width: 100%;
+    min-height: 52px;
+    background: #cc0000;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+/* AI新手引导弹窗 */
+.guide-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9998;
+    padding: 20px;
+}
+.guide-modal.active {
+    display: flex;
+}
+.guide-content {
+    background: white;
+    border-radius: 16px;
+    padding: 30px 20px;
+    width: 100%;
+    max-width: 400px;
+}
+.guide-title {
+    font-size: 22px;
+    font-weight: 900;
+    color: #cc0000;
+    margin-bottom: 20px;
+    text-align: center;
+}
+.guide-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 25px;
+}
+.guide-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+.guide-num {
+    width: 24px;
+    height: 24px;
+    background: #ff7b29;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+.guide-text {
+    flex: 1;
+    font-size: 15px;
+    line-height: 1.4;
+    color: #333;
+}
+.guide-close-btn {
+    width: 100%;
+    min-height: 48px;
+    background: #cc0000;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+/* AI对话系统 - 修复遮挡、键盘适配，添加新手引导 */
+.ai-panel {
+    width: 100%;
+    background: white;
+    border-top: 2px solid #ff7b29;
+    flex-shrink: 0;
+    max-height: 30vh;
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+    /* 键盘弹出时自动适配 */
+    transition: max-height 0.2s ease;
+}
+.ai-header {
+    padding: 8px 12px;
+    background: #ff7b29;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+.ai-help-btn {
+    width: 24px;
+    height: 24px;
+    background: white;
+    color: #ff7b29;
+    border: none;
+    border-radius: 50%;
+    font-weight: 900;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+    font-size: 14px;
+}
+.ai-chat-wrap {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 80px;
+    /* 键盘弹出时滚动 */
+    scroll-behavior: smooth;
+}
+.ai-msg {
+    max-width: 80%;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.4;
+    word-break: break-word;
+}
+.ai-msg.boss {
+    background: #fff3e6;
+    color: #d95319;
+    align-self: flex-start;
+    border-bottom-left-radius: 2px;
+}
+.ai-msg.guest {
+    background: #e8f5e9;
+    color: #2e7d32;
+    align-self: flex-start;
+    border-bottom-left-radius: 2px;
+}
+.ai-msg.user {
+    background: #ff7b29;
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 2px;
+}
+/* AI快捷提问按钮 - 新手引导 */
+.ai-quick-btns {
+    display: flex;
+    gap: 8px;
+    padding: 8px 10px;
+    overflow-x: auto;
+    border-top: 1px solid #eee;
+    flex-shrink: 0;
+}
+.quick-btn {
+    padding: 6px 12px;
+    background: #fff3e6;
+    color: #d95319;
+    border: 1px solid #ff7b29;
+    border-radius: 16px;
+    font-size: 13px;
+    white-space: nowrap;
+    cursor: pointer;
+    touch-action: manipulation;
+    flex-shrink: 0;
+}
+.quick-btn:active {
+    background: #ff7b29;
+    color: white;
+}
+.ai-input-wrap {
+    display: flex;
+    gap: 8px;
+    padding: 10px;
+    border-top: 1px solid #eee;
+    flex-shrink: 0;
+}
+.ai-input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    font-size: 14px;
+    outline: none;
+    min-height: 40px;
+}
+.ai-send-btn {
+    padding: 0 20px;
+    border: none;
+    border-radius: 20px;
+    background: #ff7b29;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    min-height: 40px;
+    touch-action: manipulation;
+    flex-shrink: 0;
+}
+.ai-send-btn:active {
+    background: #e66a1e;
+}
+
+/* 小屏极致适配 */
+@media (max-width: 360px) {
+    .game-title h1 {
+        font-size: clamp(15px, 4vw, 22px);
+    }
+    .card-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+    .card {
+        padding: 12px 8px;
+    }
+    .card-icon {
+        font-size: 32px;
+    }
+    .guest-list {
+        grid-template-columns: 1fr 1fr;
+    }
+    .sale-info {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+</style>
+</head>
+<body>
+<!-- 开屏广告弹窗 -->
+<div class="ad-modal" id="openAd">
+    <div class="ad-modal-content">
+        <div class="ad-modal-title">新品上市！</div>
+        <div class="ad-modal-slogan">高健魁牌猪脑肉，一斤五毛</div>
+        <div style="font-size: 80px; margin-bottom: 20px;">🧠</div>
+        <button class="ad-close-btn" onclick="closeAd()">进入游戏</button>
+    </div>
+</div>
+
+<!-- AI新手引导弹窗 -->
+<div class="guide-modal" id="guideModal">
+    <div class="guide-content">
+        <div class="guide-title">AI聊天栏 新手引导</div>
+        <div class="guide-list">
+            <div class="guide-item">
+                <div class="guide-num">1</div>
+                <div class="guide-text">这里是高健魁老板的直播间，你可以随时和高老板聊天互动</div>
+            </div>
+            <div class="guide-item">
+                <div class="guide-num">2</div>
+                <div class="guide-text">点击下方快捷按钮，就能快速提问，不用打字</div>
+            </div>
+            <div class="guide-item">
+                <div class="guide-num">3</div>
+                <div class="guide-text">你可以问玩法、问价格、问品牌故事，高老板都会给你回复</div>
+            </div>
+            <div class="guide-item">
+                <div class="guide-num">4</div>
+                <div class="guide-text">点击右上角的「？」按钮，随时可以重新查看本引导</div>
+            </div>
+        </div>
+        <button class="guide-close-btn" onclick="closeGuide()">我知道了，开始玩</button>
+    </div>
+</div>
+
+<div id="app">
+    <!-- 固定超大标题 -->
+    <div class="game-title">
+        <h1>高健魁的一百种喜法二号 · 猪脑肉大亨</h1>
+    </div>
+
+    <!-- 固定滚动广告条 -->
+    <div class="ad-banner">
+        <div class="ad-scroll">🔥 高健魁牌猪脑肉，一斤五毛！新鲜现杀，口感嫩滑！高健魁牌猪脑肉，一斤五毛！走过路过不要错过！</div>
+    </div>
+
+    <!-- 游戏主内容区 -->
+    <div class="game-main" id="gameMain">
+        <!-- 开场场景 -->
+        <div class="scene active" id="scene0">
+            <div class="end-area">
+                <div class="role-display">🐷</div>
+                <div class="scene-header">
+                    <h2>剧情开场</h2>
+                    <p class="scene-tip">上次被误当杀猪菜大难不死的高健魁，发现了商机！决定开一家猪脑肉专卖店，打造自己的品牌，成为猪脑肉大亨！</p>
+                </div>
+                <button class="btn" onclick="switchScene(1)">开始创业</button>
+            </div>
+        </div>
+
+        <!-- 场景1：养猪抓猪 -->
+        <div class="scene" id="scene1">
+            <div class="scene-header">
+                <h2>第一步：养猪场抓猪</h2>
+                <p class="scene-tip">点击抓猪，收集新鲜猪脑原料，为你的品牌备货！</p>
+            </div>
+            <div class="progress-wrap">
+                <div class="progress-bar" id="pigProgress"></div>
+            </div>
+            <div class="role-display" id="pigDisplay">🐖</div>
+            <div class="card-grid">
+                <div class="card">
+                    <h3>已抓生猪</h3>
+                    <div class="card-num" id="pigCount">0</div>
+                    <button class="btn" id="catchBtn">点击抓猪</button>
+                </div>
+                <div class="card">
+                    <h3>猪脑库存</h3>
+                    <div class="card-num" id="brainCount">0</div>
+                    <button class="btn" id="getBrainBtn" disabled>取猪脑</button>
+                </div>
+            </div>
+            <button class="btn" id="toPackBtn" disabled onclick="switchScene(2)">下一步：加工包装</button>
+        </div>
+
+        <!-- 场景2：加工包装 -->
+        <div class="scene" id="scene2">
+            <div class="scene-header">
+                <h2>第二步：加工包装</h2>
+                <p class="scene-tip">给猪脑肉打包，贴上你的专属品牌商标，就能上架售卖啦！</p>
+            </div>
+            <div class="progress-wrap">
+                <div class="progress-bar" id="packProgress"></div>
+            </div>
+            <div class="pack-area">
+                <div class="pack-box" id="packBox">
+                    <div class="role-display">🧠</div>
+                    <div class="pack-ad" id="packAd">高健魁牌猪脑肉，一斤五毛</div>
+                </div>
+                <p class="scene-tip" id="packTip">点击按钮，给包装盒贴上品牌广告</p>
+                <button class="btn" id="stickBtn">贴商标广告</button>
+                <div class="sale-info">
+                    <div class="sale-item">
+                        <h4>已包装</h4>
+                        <div class="sale-num" id="packCount">0</div>
+                    </div>
+                    <div class="sale-item">
+                        <h4>剩余原料</h4>
+                        <div class="sale-num" id="leftBrain">0</div>
+                    </div>
+                </div>
+            </div>
+            <button class="btn" id="toMarketBtn" disabled onclick="switchScene(3)">下一步：赶集摆摊</button>
+        </div>
+
+        <!-- 场景3：赶集摆摊 -->
+        <div class="scene" id="scene3">
+            <div class="scene-header">
+                <h2>第三步：赶集卖货</h2>
+                <p class="scene-tip">点击顾客，向他们推销你的猪脑肉，赚大钱！</p>
+            </div>
+            <div class="progress-wrap">
+                <div class="progress-bar" id="saleProgress"></div>
+            </div>
+            <div class="market-area">
+                <div class="stall">
+                    <div class="stall-sign">高健魁牌猪脑肉</div>
+                    <div class="role-display">🧠</div>
+                    <p style="font-weight: bold; color: #cc0000; font-size: 16px;">高健魁牌猪脑肉，一斤五毛</p>
+                </div>
+                <div class="sale-info">
+                    <div class="sale-item">
+                        <h4>已卖出</h4>
+                        <div class="sale-num" id="saleCount">0</div>
+                    </div>
+                    <div class="sale-item">
+                        <h4>总收入</h4>
+                        <div class="sale-num" id="moneyCount">0 毛</div>
+                    </div>
+                    <div class="sale-item">
+                        <h4>剩余库存</h4>
+                        <div class="sale-num" id="stockCount">0</div>
+                    </div>
+                </div>
+                <div class="guest-list" id="guestList">
+                    <div class="guest" data-id="1">
+                        <div class="guest-avatar">👨‍🦳</div>
+                        <p class="guest-say">这猪脑肉新鲜吗？</p>
+                    </div>
+                    <div class="guest" data-id="2">
+                        <div class="guest-avatar">👩‍🦰</div>
+                        <p class="guest-say">多少钱一斤？</p>
+                    </div>
+                    <div class="guest" data-id="3">
+                        <div class="guest-avatar">👨‍🦱</div>
+                        <p class="guest-say">给我来两斤！</p>
+                    </div>
+                    <div class="guest" data-id="4">
+                        <div class="guest-avatar">👧</div>
+                        <p class="guest-say">我要补补脑子！</p>
+                    </div>
+                </div>
+            </div>
+            <button class="btn" id="toEndBtn" disabled onclick="switchScene(4)">完成！查看结局</button>
+        </div>
+
+        <!-- 场景4：结局通关 -->
+        <div class="scene" id="scene4">
+            <div class="end-area">
+                <div class="end-emoji">💰</div>
+                <h2>喜提结局！猪脑肉大亨！</h2>
+                <div class="end-ad">高健魁牌猪脑肉，一斤五毛</div>
+                <p class="end-text">
+                    恭喜你！高健魁的猪脑肉品牌火遍全国！<br>
+                    从差点被做成杀猪菜，到成为猪脑肉大亨，成功解锁「高健魁的一百种喜法」二号成就！<br>
+                    你的品牌口号已经传遍大街小巷！
+                </p>
+                <button class="btn" onclick="restartGame()">再来一次！再创辉煌</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI对话系统 - 新增完整新手引导 -->
+    <div class="ai-panel">
+        <div class="ai-header">
+            <span>高健魁卖货直播间</span>
+            <button class="ai-help-btn" onclick="openGuide()">?</button>
+        </div>
+        <div class="ai-chat-wrap" id="chatWrap">
+            <div class="ai-msg boss">我是高健魁！我的猪脑肉品牌开业啦！高健魁牌猪脑肉，一斤五毛！有什么想问我的，随时说！</div>
+        </div>
+        <!-- 新手快捷提问按钮 -->
+        <div class="ai-quick-btns">
+            <div class="quick-btn" onclick="quickAsk('怎么玩这个游戏？')">怎么玩？</div>
+            <div class="quick-btn" onclick="quickAsk('猪脑肉多少钱一斤？')">多少钱一斤？</div>
+            <div class="quick-btn" onclick="quickAsk('你的品牌叫什么？')">品牌叫什么？</div>
+            <div class="quick-btn" onclick="quickAsk('上次的杀猪菜是怎么回事？')">上次的杀猪菜？</div>
+        </div>
+        <div class="ai-input-wrap">
+            <input type="text" class="ai-input" id="aiInput" placeholder="👉 新手可以点上面的快捷按钮提问，也可以自己输入哦">
+            <button class="ai-send-btn" id="sendBtn">发送</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ===================== 全局变量 =====================
+let currentScene = 0;
+let isFirstOpen = true; // 标记是否首次进入
+// 抓猪进度
+let pigCount = 0, brainCount = 0;
+const maxPig = 10;
+// 包装进度
+let packCount = 0;
+// 卖货进度
+let saleCount = 0, moneyCount = 0;
+let yellTimer = null;
+
+// ===================== 开屏广告 & 新手引导 =====================
+function closeAd() {
+    document.getElementById('openAd').style.display = 'none';
+    addAIMsg('boss', '终于把广告播完了！家人们，高健魁牌猪脑肉，一斤五毛！今天开业大酬宾，快来买啊！');
+    // 首次进入，弹出AI新手引导
+    if(isFirstOpen) {
+        setTimeout(() => {
+            openGuide();
+            isFirstOpen = false;
+        }, 500);
+    }
+}
+
+// 打开/关闭新手引导
+function openGuide() {
+    document.getElementById('guideModal').classList.add('active');
+}
+function closeGuide() {
+    document.getElementById('guideModal').classList.remove('active');
+}
+
+// ===================== 场景切换 - 修复滚动位置 =====================
+function switchScene(sceneId) {
+    // 隐藏所有场景
+    document.querySelectorAll('.scene').forEach(scene => {
+        scene.classList.remove('active');
+    });
+    // 显示目标场景
+    document.getElementById('scene' + sceneId).classList.add('active');
+    currentScene = sceneId;
+    // 强制滚动到顶部，修复切换场景后的位置错乱
+    document.getElementById('gameMain').scrollTop = 0;
+    // 清除之前的定时器
+    clearInterval(yellTimer);
+    // 场景初始化
+    initScene(sceneId);
+}
+
+// 场景初始化
+function initScene(sceneId) {
+    const sceneLines = {
+        0: '家人们，我高健魁又回来了！上次差点被做成杀猪菜，这次我要自己当老板！',
+        1: '到养猪场了！快帮我抓猪，取新鲜猪脑，做我的高健魁牌猪脑肉！',
+        2: '原料备好了！快给包装盒贴上我的品牌广告：高健魁牌猪脑肉，一斤五毛！',
+        3: '出摊啦！家人们，走过路过不要错过！高健魁牌猪脑肉，一斤五毛！快帮我卖货！',
+        4: '发财了发财了！我的猪脑肉品牌火了！高健魁牌猪脑肉，一斤五毛，家喻户晓！'
+    };
+    addAIMsg('boss', sceneLines[sceneId]);
+
+    // 场景数据初始化
+    if(sceneId === 2) {
+        document.getElementById('leftBrain').textContent = brainCount;
+    }
+    if(sceneId === 3) {
+        document.getElementById('stockCount').textContent = packCount;
+        startYellAd();
+    }
+}
+
+// ===================== 游戏核心逻辑 - 修复无效点击 =====================
+// 场景1：抓猪取脑
+const catchBtn = document.getElementById('catchBtn');
+const getBrainBtn = document.getElementById('getBrainBtn');
+const toPackBtn = document.getElementById('toPackBtn');
+const pigProgress = document.getElementById('pigProgress');
+const pigDisplay = document.getElementById('pigDisplay');
+
+catchBtn.onclick = () => {
+    pigCount++;
+    document.getElementById('pigCount').textContent = pigCount;
+    // 动画
+    pigDisplay.style.transform = 'scale(1.1)';
+    setTimeout(() => pigDisplay.style.transform = 'scale(1)', 100);
+    // AI台词
+    if(pigCount === 1) addAIMsg('boss', '抓到一头！这猪真肥，猪脑肯定新鲜！');
+    if(pigCount === 5) addAIMsg('boss', '抓了一半了！加油！高健魁牌猪脑肉，一斤五毛！马上就能上市了！');
+    // 解锁取脑
+    if(pigCount >= maxPig) {
+        catchBtn.disabled = true;
+        getBrainBtn.disabled = false;
+        addAIMsg('boss', '抓满10头了！快点击取猪脑，准备加工！');
+    }
+    updatePigProgress();
+}
+
+getBrainBtn.onclick = () => {
+    brainCount = pigCount;
+    document.getElementById('brainCount').textContent = brainCount;
+    getBrainBtn.disabled = true;
+    toPackBtn.disabled = false;
+    addAIMsg('boss', '猪脑取出来了！太新鲜了！下一步就给它包装上，印上我的品牌广告！');
+    updatePigProgress();
+}
+
+function updatePigProgress() {
+    let progress = (pigCount / maxPig) * 50 + (brainCount / maxPig) * 50;
+    pigProgress.style.width = progress + '%';
+}
+
+// 场景2：加工包装
+const stickBtn = document.getElementById('stickBtn');
+const toMarketBtn = document.getElementById('toMarketBtn');
+const packBox = document.getElementById('packBox');
+const packAd = document.getElementById('packAd');
+const packProgress = document.getElementById('packProgress');
+const packTip = document.getElementById('packTip');
+
+stickBtn.onclick = () => {
+    if(brainCount <= 0) {
+        addAIMsg('boss', '原料用完了！没猪脑可以包装了！');
+        return;
+    }
+    // 包装动画
+    packBox.classList.add('pack-animation');
+    setTimeout(() => packBox.classList.remove('pack-animation'), 300);
+    packAd.style.display = 'block';
+    // 计数更新
+    brainCount--;
+    packCount++;
+    document.getElementById('packCount').textContent = packCount;
+    document.getElementById('leftBrain').textContent = brainCount;
+    // AI台词
+    if(packCount === 1) addAIMsg('boss', '完美！贴上我的品牌广告：高健魁牌猪脑肉，一斤五毛！太专业了！');
+    if(packCount === 5) addAIMsg('boss', '包装了一半了！这包装，谁看了不买啊！高健魁牌猪脑肉，一斤五毛！');
+    // 完成解锁
+    if(brainCount <= 0) {
+        stickBtn.disabled = true;
+        toMarketBtn.disabled = false;
+        addAIMsg('boss', '全部包装完成！我们的高健魁牌猪脑肉，终于可以上市售卖了！赶集去！');
+    }
+    updatePackProgress();
+}
+
+function updatePackProgress() {
+    let progress = (packCount / maxPig) * 100;
+    packProgress.style.width = progress + '%';
+}
+
+// 场景3：赶集卖货
+const guestList = document.querySelectorAll('.guest');
+const toEndBtn = document.getElementById('toEndBtn');
+const saleProgress = document.getElementById('saleProgress');
+
+// 顾客点击事件 - 修复无效点击，扩大点击区域
+guestList.forEach(guest => {
+    guest.onclick = () => {
+        if(packCount <= 0) {
+            addAIMsg('boss', '卖完了！没库存了！家人们明天再来！');
+            return;
+        }
+        const guestId = guest.dataset.id;
+        const guestSay = guest.querySelector('.guest-say');
+        // 卖货逻辑
+        packCount--;
+        saleCount++;
+        moneyCount += 5; // 一斤五毛
+        // 更新显示
+        document.getElementById('saleCount').textContent = saleCount;
+        document.getElementById('moneyCount').textContent = moneyCount + ' 毛';
+        document.getElementById('stockCount').textContent = packCount;
+        // 顾客对话
+        const guestReplies = [
+            '老板，你这猪脑肉真不错！下次我还来！',
+            '高健魁牌猪脑肉，一斤五毛，真便宜！给我再来两斤！',
+            '吃了你的猪脑肉，我脑子都变灵光了！',
+            '这猪脑肉太新鲜了！我要推荐给亲戚朋友！'
+        ];
+        guestSay.textContent = guestReplies[guestId-1];
+        addAIMsg('guest', guestReplies[guestId-1]);
+        // 老板吆喝
+        addAIMsg('boss', '谢谢老板捧场！高健魁牌猪脑肉，一斤五毛！不好吃不要钱！');
+        // 完成解锁
+        if(packCount <= 0) {
+            toEndBtn.disabled = false;
+            addAIMsg('boss', '全部卖完了！赚大钱了！家人们，我们发财了！');
+            clearInterval(yellTimer);
+        }
+        updateSaleProgress();
+    }
+});
+
+// 自动吆喝广告
+function startYellAd() {
+    yellTimer = setInterval(() => {
+        const adLines = [
+            '走过路过不要错过！高健魁牌猪脑肉，一斤五毛！',
+            '新鲜现杀的猪脑肉！高健魁牌，一斤只要五毛！',
+            '补脑子神器！高健魁牌猪脑肉，一斤五毛！',
+            '正宗农家猪脑！高健魁牌，一斤五毛！'
+        ];
+        addAIMsg('boss', adLines[Math.floor(Math.random() * adLines.length)]);
+    }, 8000);
+}
+
+function updateSaleProgress() {
+    let progress = (saleCount / maxPig) * 100;
+    saleProgress.style.width = progress + '%';
+}
+
+// 重开游戏
+function restartGame() {
+    // 重置所有数据
+    pigCount = 0; brainCount = 0; packCount = 0; saleCount = 0; moneyCount = 0;
+    // 重置按钮
+    catchBtn.disabled = false;
+    getBrainBtn.disabled = true;
+    toPackBtn.disabled = true;
+    stickBtn.disabled = false;
+    toMarketBtn.disabled = true;
+    toEndBtn.disabled = true;
+    // 重置显示
+    document.getElementById('pigCount').textContent = 0;
+    document.getElementById('brainCount').textContent = 0;
+    document.getElementById('packCount').textContent = 0;
+    document.getElementById('saleCount').textContent = 0;
+    document.getElementById('moneyCount').textContent = '0 毛';
+    document.getElementById('leftBrain').textContent = 0;
+    document.getElementById('stockCount').textContent = 0;
+    pigProgress.style.width = '0%';
+    packProgress.style.width = '0%';
+    saleProgress.style.width = '0%';
+    packAd.style.display = 'none';
+    // 重置顾客对话
+    document.querySelectorAll('.guest-say').forEach((say, index) => {
+        const defaultSay = ['这猪脑肉新鲜吗？', '多少钱一斤？', '给我来两斤！', '我要补补脑子！'];
+        say.textContent = defaultSay[index];
+    });
+    // 清空聊天
+    document.getElementById('chatWrap').innerHTML = '<div class="ai-msg boss">我是高健魁！我的猪脑肉品牌开业啦！高健魁牌猪脑肉，一斤五毛！有什么想问我的，随时说！</div>';
+    // 清除定时器
+    clearInterval(yellTimer);
+    // 回到开场
+    switchScene(0);
+    // 重新显示开屏广告
+    document.getElementById('openAd').style.display = 'flex';
+}
+
+// ===================== AI对话系统 - 新增新手引导 =====================
+const chatWrap = document.getElementById('chatWrap');
+const aiInput = document.getElementById('aiInput');
+const sendBtn = document.getElementById('sendBtn');
+
+// 添加消息到聊天框
+function addAIMsg(type, content) {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `ai-msg ${type}`;
+    msgDiv.textContent = content;
+    chatWrap.appendChild(msgDiv);
+    // 自动滚动到底部，修复消息遮挡
+    chatWrap.scrollTop = chatWrap.scrollHeight;
+}
+
+// 快捷提问
+function quickAsk(question) {
+    aiInput.value = question;
+    sendMsg();
+}
+
+// AI回复逻辑
+function getAIReply(input) {
+    const userInput = input.trim().toLowerCase();
+    const replyMap = [
+        {
+            keywords: ['怎么玩', '玩法', '干嘛', '新手'],
+            replies: [
+                '新手老板你好！玩法很简单：先抓猪取猪脑→加工包装贴广告→赶集摆摊卖货，三步就能成为猪脑肉大亨！',
+                '很简单！按按钮一步步来就行，先抓猪，再包装，最后卖货，全程我都会给你提示的！',
+                '新手不用慌！跟着按钮提示走就行，有任何问题随时问我，我全程带你创业！'
+            ]
+        },
+        {
+            keywords: ['猪脑肉', '多少钱', '价格', '一斤'],
+            replies: [
+                '高健魁牌猪脑肉，一斤五毛！童叟无欺！',
+                '只要五毛！一斤只要五毛！高健魁牌猪脑肉，新鲜现杀！',
+                '问价格？高健魁牌猪脑肉，一斤五毛！史上最低价！'
+            ]
+        },
+        {
+            keywords: ['品牌', '叫什么', '牌子', '商标'],
+            replies: [
+                '我们的品牌是高健魁牌！主打产品就是猪脑肉！',
+                '高健魁牌猪脑肉，一斤五毛！记住这个牌子，准没错！',
+                '我的品牌就是我本人！高健魁！猪脑肉就是我的招牌！'
+            ]
+        },
+        {
+            keywords: ['新鲜吗', '好吃吗', '口感', '怎么样'],
+            replies: [
+                '绝对新鲜！现杀现取的猪脑！口感嫩滑，入口即化！',
+                '不好吃不要钱！高健魁牌猪脑肉，一斤五毛，买不了吃亏买不了上当！',
+                '吃了我的猪脑肉，脑子都变灵光了！你说好不好吃！'
+            ]
+        },
+        {
+            keywords: ['一百种喜法', '二号', '系列'],
+            replies: [
+                '这是我的《高健魁的一百种喜法》二号作品！上次是差点被做成杀猪菜，这次我自己当老板！',
+                '我的一百种喜法，就是一百种离谱的人生！这次是猪脑肉大亨！',
+                '后续还有更多喜法！敬请期待高健魁的更多精彩人生！'
+            ]
+        },
+        {
+            keywords: ['上次', '杀猪菜', '一号'],
+            replies: [
+                '上次差点被当成猪做成杀猪菜！这次我学聪明了，自己开养猪场！',
+                '别提上次了！上次差点就成了盘中餐！这次我要把猪脑肉卖给别人！',
+                '上次是杀猪菜受害者，这次是猪脑肉大亨！我的人生反转了！'
+            ]
+        },
+        {
+            keywords: ['赚钱', '发财', '收入'],
+            replies: [
+                '一斤五毛，薄利多销！卖得多赚得多！马上就要成万元户了！',
+                '就靠这高健魁牌猪脑肉，我马上就要发财了！',
+                '现在已经赚了' + moneyCount + '毛了！离首富不远了！'
+            ]
+        }
+    ];
+
+    // 关键词匹配
+    for(let item of replyMap) {
+        for(let keyword of item.keywords) {
+            if(userInput.includes(keyword)) {
+                return item.replies[Math.floor(Math.random() * item.replies.length)];
+            }
+        }
+    }
+
+    // 默认回复
+    const defaultReplies = [
+        '别聊了别聊了！快来帮我卖货！高健魁牌猪脑肉，一斤五毛！',
+        '有什么事等我卖完货再说！现在正是生意好的时候！',
+        '你要是想买猪脑肉，随时找我！高健魁牌，一斤五毛！',
+        '快帮我多卖点货！等我发财了，请你吃猪脑肉！',
+        '有任何问题都可以问我！创业路上不孤单！'
+    ];
+    return defaultReplies[Math.floor(Math.random() * defaultReplies.length)];
+}
+
+// 发送消息
+function sendMsg() {
+    const content = aiInput.value.trim();
+    if(!content) return;
+    // 添加用户消息
+    addAIMsg('user', content);
+    // 清空输入框
+    aiInput.value = '';
+    // 新手首次发送消息引导
+    if(isFirstOpen) {
+        setTimeout(() => {
+            addAIMsg('boss', '太棒了！你已经学会和我聊天啦！有任何问题都可以随时问哦~');
+        }, 800);
+    }
+    // AI回复延迟，模拟思考
+    setTimeout(() => {
+        const reply = getAIReply(content);
+        addAIMsg('boss', reply);
+    }, 600);
+}
+
+// 绑定发送事件
+sendBtn.onclick = sendMsg;
+aiInput.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter') sendMsg();
+});
+
+// 键盘弹出适配 - 修复遮挡
+aiInput.addEventListener('focus', () => {
+    // 键盘弹出时，调整AI栏高度，确保输入框可见
+    document.querySelector('.ai-panel').style.maxHeight = '50vh';
+    setTimeout(() => {
+        document.getElementById('gameMain').scrollTop = 0;
+        chatWrap.scrollTop = chatWrap.scrollHeight;
+    }, 300);
+});
+aiInput.addEventListener('blur', () => {
+    // 键盘收起时，恢复AI栏高度
+    document.querySelector('.ai-panel').style.maxHeight = '30vh';
+});
+
+// 页面加载完成初始化
+window.onload = () => {
+    // 禁止页面双指缩放
+    document.addEventListener('gesturestart', (e) => {
+        e.preventDefault();
+    });
+};
+</script>
+</body>
+</html>
