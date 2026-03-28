@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>高健魁的一百种喜法之误当杀猪菜</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    font-family: "Microsoft YaHei", system-ui, sans-serif;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: linear-gradient(to bottom, #fff8e6, #ffebcc);
+}
+
+/* 根容器 - 完美适配全屏 */
+#app {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* 超大固定标题 - 永远不会被遮挡 */
+.game-title {
+    width: 100%;
+    padding: 12px 8px;
+    background: linear-gradient(135deg, #ff2222, #cc0000);
+    text-align: center;
+    flex-shrink: 0;
+    border-bottom: 3px solid #ffd700;
+}
+.game-title h1 {
+    color: #fff;
+    font-size: clamp(18px, 5vw, 32px);
+    font-weight: 900;
+    text-shadow: 2px 2px 0 #000;
+    line-height: 1.2;
+}
+
+/* 游戏主内容区 - 自适应剩余高度 */
+.game-main {
+    flex: 1;
+    width: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 16px 12px;
+}
+
+/* 场景通用样式 */
+.scene {
+    display: none;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    min-height: 100%;
+}
+.scene.active {
+    display: flex;
+}
+
+.scene-header {
+    text-align: center;
+}
+.scene-header h2 {
+    color: #d95319;
+    font-size: clamp(20px, 4vw, 26px);
+    margin-bottom: 8px;
+}
+.scene-tip {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+/* 进度条 */
+.progress-wrap {
+    width: 100%;
+    height: 12px;
+    background: #f0f0f0;
+    border-radius: 6px;
+    overflow: hidden;
+}
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(to right, #ff9500, #ff3d00);
+    transition: width 0.3s ease;
+}
+
+/* 角色展示 */
+.role-display {
+    font-size: clamp(60px, 15vw, 100px);
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+/* 按钮通用样式 */
+.btn {
+    padding: 14px 20px;
+    border: none;
+    border-radius: 12px;
+    background: #ff7b29;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    width: 100%;
+}
+.btn:active {
+    transform: scale(0.95);
+    background: #e66a1e;
+}
+.btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+.btn-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+}
+
+/* 备料步骤卡片 */
+.step-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+}
+.step-card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px 12px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.step-card h3 {
+    font-size: 16px;
+    color: #d95319;
+    margin-bottom: 8px;
+}
+.step-icon {
+    font-size: 40px;
+    margin-bottom: 8px;
+}
+.step-progress {
+    width: 100%;
+    height: 8px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+.step-progress .fill {
+    height: 100%;
+    width: 0%;
+    background: #ff7b29;
+    transition: width 0.2s ease;
+}
+
+/* 烹饪区域 */
+.cook-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+.food-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    width: 100%;
+}
+.food-item {
+    background: white;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 36px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.food-item:active {
+    transform: scale(0.9);
+}
+.food-item.used {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+.pot-animation {
+    animation: shake 0.5s infinite alternate;
+}
+@keyframes shake {
+    from { transform: rotate(-3deg); }
+    to { transform: rotate(3deg); }
+}
+
+/* 干饭区域 */
+.table-area {
+    background: #f5deb3;
+    border-radius: 12px;
+    padding: 20px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+.guest-list {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+}
+.guest {
+    text-align: center;
+}
+.guest-avatar {
+    font-size: 40px;
+}
+.guest-mood {
+    font-size: 12px;
+    color: #333;
+    margin-top: 4px;
+}
+
+/* 结局区域 */
+.end-area {
+    text-align: center;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+.end-emoji {
+    font-size: 120px;
+}
+.end-text {
+    font-size: 18px;
+    line-height: 1.6;
+    color: #333;
+}
+
+/* AI对话系统 - 固定底部，完美适配手机键盘 */
+.ai-panel {
+    width: 100%;
+    background: white;
+    border-top: 2px solid #ff7b29;
+    flex-shrink: 0;
+    max-height: 40vh;
+    display: flex;
+    flex-direction: column;
+}
+.ai-header {
+    padding: 8px 12px;
+    background: #ff7b29;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.ai-chat-wrap {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 120px;
+}
+.ai-msg {
+    max-width: 80%;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+.ai-msg.ai {
+    background: #fff3e6;
+    color: #d95319;
+    align-self: flex-start;
+    border-bottom-left-radius: 2px;
+}
+.ai-msg.user {
+    background: #ff7b29;
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 2px;
+}
+.ai-input-wrap {
+    display: flex;
+    gap: 8px;
+    padding: 10px;
+    border-top: 1px solid #eee;
+}
+.ai-input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    font-size: 14px;
+    outline: none;
+}
+.ai-send-btn {
+    padding: 0 20px;
+    border: none;
+    border-radius: 20px;
+    background: #ff7b29;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+.ai-send-btn:active {
+    background: #e66a1e;
+}
+
+/* 小屏适配 */
+@media (max-width: 380px) {
+    .step-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+    .step-card {
+        padding: 12px 8px;
+    }
+    .step-icon {
+        font-size: 32px;
+    }
+    .btn {
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+}
+</style>
+</head>
+<body>
+<div id="app">
+    <!-- 固定超大标题 -->
+    <div class="game-title">
+        <h1>高健魁的一百种喜法之误当杀猪菜！！！</h1>
+    </div>
+
+    <!-- 游戏主内容区 -->
+    <div class="game-main">
+        <!-- 开场场景 -->
+        <div class="scene active" id="scene0">
+            <div class="end-area">
+                <div class="role-display">🐷</div>
+                <div class="scene-header">
+                    <h2>剧情开场</h2>
+                    <p class="scene-tip">倒霉的高健魁误闯农家院，被当成了年猪，要做成地道米脂杀猪菜！你将全程主导这场离谱的搞笑的杀猪之旅！</p>
+                </div>
+                <button class="btn" onclick="switchScene(1)">开始游戏</button>
+            </div>
+        </div>
+
+        <!-- 场景1：杀猪备料 -->
+        <div class="scene" id="scene1">
+            <div class="scene-header">
+                <h2>第一步：杀猪备料</h2>
+                <p class="scene-tip">按顺序完成4个步骤，备好新鲜食材，才能做出地道杀猪菜！</p>
+            </div>
+            <div class="progress-wrap">
+                <div class="progress-bar" id="killProgress"></div>
+            </div>
+            <div class="role-display" id="pigDisplay">🐖</div>
+            <div class="step-grid">
+                <div class="step-card">
+                    <h3>清洗生猪</h3>
+                    <div class="step-icon">💦</div>
+                    <div class="step-progress">
+                        <div class="fill" id="washProgress"></div>
+                    </div>
+                    <button class="btn" id="washBtn">点击清洗</button>
+                </div>
+                <div class="step-card">
+                    <h3>脱毛处理</h3>
+                    <div class="step-icon">✂️</div>
+                    <div class="step-progress">
+                        <div class="fill" id="hairProgress"></div>
+                    </div>
+                    <button class="btn" id="hairBtn" disabled>点击脱毛</button>
+                </div>
+                <div class="step-card">
+                    <h3>分割猪肉</h3>
+                    <div class="step-icon">🔪</div>
+                    <div class="step-progress">
+                        <div class="fill" id="cutProgress"></div>
+                    </div>
+                    <button class="btn" id="cutBtn" disabled>点击分割</button>
+                </div>
+                <div class="step-card">
+                    <h3>配菜准备</h3>
+                    <div class="step-icon">💩</div>
+                    <div class="step-progress">
+                        <div class="fill" id="vegeProgress"></div>
+                    </div>
+                    <button class="btn" id="vegeBtn" disabled>准备配菜</button>
+                </div>
+            </div>
+            <button class="btn" id="toCookBtn" disabled onclick="switchScene(2)">下一步：下锅烹饪</button>
+        </div>
+
+        <!-- 场景2：烹饪制作 -->
+        <div class="scene" id="scene2">
+            <div class="scene-header">
+                <h2>第二步：烹饪杀猪菜</h2>
+                <p class="scene-tip">按顺序把食材下锅，翻炒炖煮，做出香味十足的杀猪菜！</p>
+            </div>
+            <div class="progress-wrap">
+                <div class="progress-bar" id="cookProgress"></div>
+            </div>
+            <div class="cook-area">
+                <div class="role-display" id="potDisplay" class="pot">🍲</div>
+                <p class="scene-tip" id="cookTip">先点击食材，把主料下锅</p>
+                <div class="food-list">
+                    <div class="food-item" id="food1" data-step="1">🥩</div>
+                    <div class="food-item" id="food2" data-step="2">🥬</div>
+                    <div class="food-item" id="food3" data-step="3">🧄</div>
+                    <div class="food-item" id="food4" data-step="4">🌶️</div>
+                    <div class="food-item" id="food5" data-step="5">🫘</div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn" id="stirBtn" disabled>点击翻炒</button>
+                    <button class="btn" id="cookBtn" disabled>开始炖煮</button>
+                </div>
+            </div>
+            <button class="btn" id="toEatBtn" disabled onclick="switchScene(3)">下一步：开吃啦！</button>
+        </div>
+
+        <!-- 场景3：开吃体验 -->
+        <div class="scene" id="scene3">
+            <div class="scene-header">
+                <h2>第三步：全家开吃杀猪菜！</h2>
+                <p class="scene-tip">点击夹菜，喂给家人们吃，看看大家的满意度吧！</p>
+            </div>
+            <div class="progress-wrap">
+                <div class="progress-bar" id="satisfactionBar"></div>
+            </div>
+            <p style="text-align: center; color: #333;">全家满意度：<span id="satisfactionNum">0</span>%</p>
+            <div class="table-area">
+                <div class="role-display" id="dishDisplay">🍲</div>
+                <div class="guest-list">
+                    <div class="guest">
+                        <div class="guest-avatar">👨</div>
+                        <p class="guest-mood" id="guest1">等着吃呢！</p>
+                    </div>
+                    <div class="guest">
+                        <div class="guest-avatar">👩</div>
+                        <p class="guest-mood" id="guest2">闻着好香啊</p>
+                    </div>
+                    <div class="guest">
+                        <div class="guest-avatar">👦</div>
+                        <p class="guest-mood" id="guest3">我要吃两碗！</p>
+                    </div>
+                    <div class="guest">
+                        <div class="guest-avatar">👧</div>
+                        <p class="guest-mood" id="guest4">快给我夹菜！</p>
+                    </div>
+                </div>
+            </div>
+            <button class="btn" id="eatBtn" style="font-size: 20px; border-radius: 50px;">🥢 点击夹菜</button>
+            <button class="btn" id="toEndBtn" disabled onclick="switchScene(4)">完成！查看结局</button>
+        </div>
+
+        <!-- 场景4：结局通关 -->
+        <div class="scene" id="scene4">
+            <div class="end-area">
+                <div class="end-emoji">🍻</div>
+                <h2>恭喜通关！</h2>
+                <p class="end-text">
+                    你成功完成了《高健魁的一百种喜法之误当杀猪菜》全流程！<br>
+                    高健魁成功变成了一锅地道的东北杀猪菜，全家吃得超满足！<br>
+                    成功解锁「年度最佳高翔」成就！
+                </p>
+                <button class="btn" onclick="restartGame()">再来一次！重玩游戏</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 内置AI对话系统 -->
+    <div class="ai-panel">
+        <div class="ai-header">
+            <span>高健魁AI实时互动</span>
+        </div>
+        <div class="ai-chat-wrap" id="chatWrap">
+            <div class="ai-msg ai">我是高健魁！救命啊！我被当成猪要做成杀猪菜了！你有什么想问我的，或者想吐槽的，都可以和我说！</div>
+        </div>
+        <div class="ai-input-wrap">
+            <input type="text" class="ai-input" id="aiInput" placeholder="和高健魁说点什么...">
+            <button class="ai-send-btn" id="sendBtn">发送</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ===================== 全局变量 =====================
+let currentScene = 0;
+// 备料进度
+let washCount = 0, hairCount = 0, cutCount = 0, vegeCount = 0;
+const maxStepClick = 5;
+// 烹饪进度
+let currentCookStep = 0;
+const totalCookStep = 5;
+let isStirred = false, isCooked = false;
+// 满意度进度
+let satisfaction = 0;
+const maxSatisfaction = 100;
+// 无操作计时器
+let noActionTimer = null;
+
+// ===================== 场景切换 =====================
+function switchScene(sceneId) {
+    // 隐藏所有场景
+    document.querySelectorAll('.scene').forEach(scene => {
+        scene.classList.remove('active');
+    });
+    // 显示目标场景
+    document.getElementById('scene' + sceneId).classList.add('active');
+    currentScene = sceneId;
+    // 滚动到顶部
+    document.querySelector('.game-main').scrollTop = 0;
+    // 清除无操作计时器
+    clearNoActionTimer();
+    // 场景切换触发AI台词
+    triggerSceneAI(sceneId);
+}
+
+// ===================== 游戏核心逻辑 =====================
+// 备料场景逻辑
+const washBtn = document.getElementById('washBtn');
+const hairBtn = document.getElementById('hairBtn');
+const cutBtn = document.getElementById('cutBtn');
+const vegeBtn = document.getElementById('vegeBtn');
+const toCookBtn = document.getElementById('toCookBtn');
+const killProgress = document.getElementById('killProgress');
+const pigDisplay = document.getElementById('pigDisplay');
+
+// 清洗
+washBtn.onclick = () => {
+    resetNoActionTimer();
+    washCount++;
+    const progress = (washCount / maxStepClick) * 100;
+    document.getElementById('washProgress').style.width = progress + '%';
+    // 动画
+    pigDisplay.style.transform = 'scale(1.1)';
+    setTimeout(() => pigDisplay.style.transform = 'scale(1)', 100);
+    // AI台词
+    if(washCount === 1) addAIMsg('ai', '别洗了别洗了！我真的不是猪啊！我是高健魁！');
+    if(washCount === 3) addAIMsg('ai', '救命啊！再洗我皮都要掉了！放过我吧！');
+    // 完成解锁下一步
+    if(washCount >= maxStepClick) {
+        washBtn.disabled = true;
+        hairBtn.disabled = false;
+        pigDisplay.textContent = '🐷';
+        addAIMsg('ai', '完了完了，洗干净了，下一步要给我脱毛了！谁来救救我！');
+    }
+    updateKillProgress();
+}
+
+// 脱毛
+hairBtn.onclick = () => {
+    resetNoActionTimer();
+    hairCount++;
+    const progress = (hairCount / maxStepClick) * 100;
+    document.getElementById('hairProgress').style.width = progress + '%';
+    // 动画
+    pigDisplay.style.transform = 'rotate(5deg)';
+    setTimeout(() => pigDisplay.style.transform = 'rotate(0)', 100);
+    // AI台词
+    if(hairCount === 1) addAIMsg('ai', '别刮了！我没毛！我真的不是猪！');
+    if(hairCount === 3) addAIMsg('ai', '刘羿程：这猪真肥，今天的杀猪菜肯定香！');
+    // 完成解锁下一步
+    if(hairCount >= maxStepClick) {
+        hairBtn.disabled = true;
+        cutBtn.disabled = false;
+        addAIMsg('ai', '救命！毛都给我刮没了，下一步要分割我了！我不想变成五花肉啊！');
+    }
+    updateKillProgress();
+}
+
+// 分割
+cutBtn.onclick = () => {
+    resetNoActionTimer();
+    cutCount++;
+    const progress = (cutCount / maxStepClick) * 100;
+    document.getElementById('cutProgress').style.width = progress + '%';
+    // AI台词
+    if(cutCount === 1) addAIMsg('ai', '别切啊！疼疼疼！我真的是人啊！');
+    if(cutCount === 3) addAIMsg('ai', '完了完了，我要变成肉块了，我的一百种喜法要变成杀猪菜了！');
+    // 完成解锁下一步
+    if(cutCount >= maxStepClick) {
+        cutBtn.disabled = true;
+        vegeBtn.disabled = false;
+        pigDisplay.textContent = '🥩';
+        addAIMsg('ai', '好了，我已经变成肉了，就差配菜了，今天这杀猪菜是跑不掉了！');
+    }
+    updateKillProgress();
+}
+
+// 配菜
+vegeBtn.onclick = () => {
+    resetNoActionTimer();
+    vegeCount++;
+    const progress = (vegeCount / maxStepClick) * 100;
+    document.getElementById('vegeProgress').style.width = progress + '%';
+    // AI台词
+    if(vegeCount === 2) addAIMsg('ai', '还准备了酸菜、血肠、五花肉？这是要做正宗米脂杀猪菜啊！');
+    // 完成解锁下一步
+    if(vegeCount >= maxStepClick) {
+        vegeBtn.disabled = true;
+        toCookBtn.disabled = false;
+        addAIMsg('ai', '食材都备齐了！下一步就要下锅了！我的人生要在锅里结束了！');
+    }
+    updateKillProgress();
+}
+
+// 更新备料总进度
+function updateKillProgress() {
+    const total = washCount + hairCount + cutCount + vegeCount;
+    const maxTotal = maxStepClick * 4;
+    const progress = (total / maxTotal) * 100;
+    killProgress.style.width = progress + '%';
+}
+
+// 烹饪场景逻辑
+const foodItems = document.querySelectorAll('.food-item');
+const stirBtn = document.getElementById('stirBtn');
+const cookBtn = document.getElementById('cookBtn');
+const potDisplay = document.getElementById('potDisplay');
+const cookTip = document.getElementById('cookTip');
+const cookProgress = document.getElementById('cookProgress');
+const toEatBtn = document.getElementById('toEatBtn');
+
+// 食材点击
+foodItems.forEach(item => {
+    item.onclick = () => {
+        resetNoActionTimer();
+        const step = parseInt(item.dataset.step);
+        if(step === currentCookStep + 1 && !item.classList.contains('used')) {
+            item.classList.add('used');
+            currentCookStep++;
+            // 下锅动画
+            potDisplay.classList.add('pot-animation');
+            setTimeout(() => potDisplay.classList.remove('pot-animation'), 300);
+            // AI台词
+            if(currentCookStep === 1) addAIMsg('ai', '别把我下锅啊！救命！我不想被煮！');
+            if(currentCookStep === 3) addAIMsg('ai', '还加屎和辣椒？是想把我做的香一点是吧！');
+            // 更新提示
+            if(currentCookStep < totalCookStep) {
+                cookTip.textContent = `不错！继续下一个食材，还差${totalCookStep - currentCookStep}个`;
+            } else {
+                cookTip.textContent = '所有食材都下锅啦！快点击翻炒，炒出香味！';
+                stirBtn.disabled = false;
+                addAIMsg('ai', '所有东西都下锅了！快翻炒啊！别把我炒糊了！（不对，我为什么要提醒你）');
+            }
+            updateCookProgress();
+        }
+    }
+});
+
+// 翻炒
+stirBtn.onclick = () => {
+    resetNoActionTimer();
+    isStirred = true;
+    potDisplay.classList.add('pot-animation');
+    cookTip.textContent = '翻炒得太到位了！香味都飘出来了，现在可以开始炖煮了！';
+    stirBtn.disabled = true;
+    cookBtn.disabled = false;
+    addAIMsg('ai', '咕嘟咕嘟...我在锅里翻滚！救命啊！我要熟了！');
+    updateCookProgress();
+}
+
+// 炖煮
+cookBtn.onclick = () => {
+    resetNoActionTimer();
+    if(isCooked) return;
+    isCooked = true;
+    cookBtn.disabled = true;
+    cookTip.textContent = '正在炖煮中...';
+    let cookTime = 0;
+    const cookInterval = setInterval(() => {
+        cookTime += 10;
+        cookProgress.style.width = (50 + cookTime/2) + '%';
+        cookTip.textContent = `炖煮中...${cookTime}%`;
+        if(cookTime === 30) addAIMsg('ai', '我已经三分熟了！还有救吗？');
+        if(cookTime === 60) addAIMsg('ai', '我已经七分熟了！闻着还挺香？不对！我在说什么啊！');
+        if(cookTime >= 100) {
+            clearInterval(cookInterval);
+            potDisplay.textContent = '🍲✨';
+            cookTip.textContent = '炖煮完成！一锅香喷喷的杀猪菜做好啦！';
+            toEatBtn.disabled = false;
+            addAIMsg('ai', '完了！我熟了！一锅香喷喷的高健魁牌杀猪菜做好了！下一步就要被吃了！');
+        }
+    }, 100);
+}
+
+// 更新烹饪进度
+function updateCookProgress() {
+    let progress = (currentCookStep / totalCookStep) * 50;
+    if(isStirred) progress += 10;
+    cookProgress.style.width = progress + '%';
+}
+
+// 开吃场景逻辑
+const eatBtn = document.getElementById('eatBtn');
+const satisfactionBar = document.getElementById('satisfactionBar');
+const satisfactionNum = document.getElementById('satisfactionNum');
+const dishDisplay = document.getElementById('dishDisplay');
+const toEndBtn = document.getElementById('toEndBtn');
+const guestTexts = [
+    document.getElementById('guest1'),
+    document.getElementById('guest2'),
+    document.getElementById('guest3'),
+    document.getElementById('guest4')
+];
+const guestMoods = [
+    ['等着吃呢！', '太香了！', '好吃到爆！', '再来一碗！'],
+    ['闻着好香啊', '味道绝了！', '太好吃了吧！', '我还要吃！'],
+    ['我要吃两碗！', '太满足了！', '这也太香了！', '我能吃一锅！'],
+    ['快给我夹菜！', '好好吃！', '太合我胃口了！', '再来亿口！']
+];
+
+// 夹菜
+eatBtn.onclick = () => {
+    resetNoActionTimer();
+    if(satisfaction >= maxSatisfaction) return;
+    // 增加满意度
+    satisfaction += Math.floor(Math.random() * 5) + 3;
+    if(satisfaction > maxSatisfaction) satisfaction = maxSatisfaction;
+    // 更新进度
+    satisfactionBar.style.width = satisfaction + '%';
+    satisfactionNum.textContent = satisfaction;
+    // 动画
+    dishDisplay.style.transform = 'scale(1.2)';
+    setTimeout(() => dishDisplay.style.transform = 'scale(1)', 100);
+    // AI台词
+    if(satisfaction === 20) addAIMsg('ai', '别吃了别吃了！给我留一口！不对，我就是菜啊！');
+    if(satisfaction === 50) addAIMsg('ai', '家人们：这杀猪菜也太香了！高健魁牌的就是不一样！');
+    if(satisfaction === 80) addAIMsg('ai', '救命啊！我快被吃光了！我的一百种喜法就这么结束了？');
+    // 更新客人心情
+    updateGuestMood();
+    // 完成解锁结局
+    if(satisfaction >= maxSatisfaction) {
+        eatBtn.disabled = true;
+        toEndBtn.disabled = false;
+        addAIMsg('ai', '完了！我被吃光了！喜提杀猪菜结局！我的一百种喜法又多了一种！');
+    }
+}
+
+// 更新客人心情
+function updateGuestMood() {
+    guestTexts.forEach((guest, index) => {
+        let moodLevel = 0;
+        if(satisfaction > 25) moodLevel = 1;
+        if(satisfaction > 50) moodLevel = 2;
+        if(satisfaction > 75) moodLevel = 3;
+        guest.textContent = guestMoods[index][moodLevel];
+    });
+}
+
+// 重开游戏
+function restartGame() {
+    // 重置所有进度
+    washCount = 0; hairCount = 0; cutCount = 0; vegeCount = 0;
+    currentCookStep = 0; isStirred = false; isCooked = false;
+    satisfaction = 0;
+    // 重置进度条
+    document.getElementById('washProgress').style.width = '0%';
+    document.getElementById('hairProgress').style.width = '0%';
+    document.getElementById('cutProgress').style.width = '0%';
+    document.getElementById('vegeProgress').style.width = '0%';
+    killProgress.style.width = '0%';
+    cookProgress.style.width = '0%';
+    satisfactionBar.style.width = '0%';
+    satisfactionNum.textContent = '0';
+    // 重置按钮状态
+    washBtn.disabled = false;
+    hairBtn.disabled = true;
+    cutBtn.disabled = true;
+    vegeBtn.disabled = true;
+    toCookBtn.disabled = true;
+    stirBtn.disabled = true;
+    cookBtn.disabled = true;
+    toEatBtn.disabled = true;
+    eatBtn.disabled = false;
+    toEndBtn.disabled = true;
+    // 重置显示
+    pigDisplay.textContent = '🐖';
+    potDisplay.textContent = '🍲';
+    dishDisplay.textContent = '🍲';
+    cookTip.textContent = '先点击食材，把主料下锅';
+    foodItems.forEach(item => item.classList.remove('used'));
+    guestTexts.forEach((guest, index) => {
+        guest.textContent = guestMoods[index][0];
+    });
+    // 清空聊天
+    document.getElementById('chatWrap').innerHTML = '<div class="ai-msg ai">我是高健魁！救命啊！我被当成猪要做成杀猪菜了！你有什么想问我的，或者想吐槽的，都可以和我说！</div>';
+    // 回到开场
+    switchScene(0);
+}
+
+// ===================== 内置AI系统核心逻辑 =====================
+const chatWrap = document.getElementById('chatWrap');
+const aiInput = document.getElementById('aiInput');
+const sendBtn = document.getElementById('sendBtn');
+
+// 添加消息到聊天框
+function addAIMsg(type, content) {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `ai-msg ${type}`;
+    msgDiv.textContent = content;
+    chatWrap.appendChild(msgDiv);
+    // 滚动到底部
+    chatWrap.scrollTop = chatWrap.scrollHeight;
+}
+
+// 场景触发AI台词
+function triggerSceneAI(sceneId) {
+    const sceneLines = {
+        0: '欢迎来到我的杀猪菜之旅！我是高健魁，今天我就要被做成杀猪菜了！快点击开始游戏，看看我的离谱遭遇！',
+        1: '救命啊！我被绑起来了！快别洗我了！我真的不是猪！我是高健魁啊！',
+        2: '完了完了，都切好了，现在要把我下锅煮了！你可别把我煮糊了啊！',
+        3: '杀猪菜做好了！现在要被端上餐桌了！家人们都等着吃我呢！快别夹了！给我留一口！',
+        4: '恭喜你！成功把我做成了杀猪菜！我的一百种喜法又解锁了新成就！你还想再玩一次吗？'
+    };
+    addAIMsg('ai', sceneLines[sceneId]);
+}
+
+// 无操作提示
+function resetNoActionTimer() {
+    clearTimeout(noActionTimer);
+    noActionTimer = setTimeout(() => {
+        const tipLines = [
+            '别愣着呀！快点击按钮继续游戏！',
+            '怎么不动了？是想放过我吗？晚了！今天这杀猪菜必须做！',
+            '快操作呀！我还等着被做成杀猪菜呢！（不是）',
+            '卡关了？有什么不懂的可以问我呀！'
+        ];
+        addAIMsg('ai', tipLines[Math.floor(Math.random() * tipLines.length)]);
+    }, 10000);
+}
+
+function clearNoActionTimer() {
+    clearTimeout(noActionTimer);
+}
+
+// AI对话匹配逻辑
+function getAIReply(input) {
+    const userInput = input.trim().toLowerCase();
+    // 关键词匹配库
+    const replyMap = [
+        {
+            keywords: ['你是谁', '谁啊', '叫什么'],
+            replies: [
+                '我是高健魁啊！倒霉被误当成猪，要被做成杀猪菜的那个！',
+                '我是高健魁！今天的主角！不对，是主菜！',
+                '我是高健魁，正在经历我的一百种喜法之杀猪菜篇！'
+            ]
+        },
+        {
+            keywords: ['怎么玩', '玩法', '干嘛', '下一步'],
+            replies: [
+                currentScene === 0 ? '点击【开始游戏】按钮，就能开启我的杀猪菜之旅啦！' :
+                currentScene === 1 ? '你现在在备料阶段，按顺序点击按钮，先清洗，再脱毛，再分割，再准备配菜，完成就能进入下一步啦！' :
+                currentScene === 2 ? '你现在在烹饪阶段，按顺序点击食材下锅，然后翻炒，再炖煮，就能做好杀猪菜啦！' :
+                currentScene === 3 ? '你现在在干饭阶段，点击【点击夹菜】按钮，喂给家人们吃，把满意度拉满就能通关啦！' :
+                '点击【再来一次】按钮，就能重新玩一遍我的杀猪菜之旅啦！'
+            ]
+        },
+        {
+            keywords: ['放过', '别吃', '救命', '救你'],
+            replies: [
+                '晚了！都已经洗干净了！今天这杀猪菜必须做成！',
+                '救命啊！快让他们别切了！不对，你就是那个掌勺的啊！',
+                '别吃我别吃我！我还能给你表演节目！别把我做成杀猪菜！',
+                '谢谢你想救我！但是已经晚了！我已经在锅里了！'
+            ]
+        },
+        {
+            keywords: ['好吃吗', '香不香', '味道'],
+            replies: [
+                '我还没吃呢！不对，我就是菜啊！家人们都说香！',
+                '那必须香！正宗东北杀猪菜，还是高健魁牌的！',
+                '闻着是挺香的！就是有点心疼我自己！'
+            ]
+        },
+        {
+            keywords: ['一百种喜法', '喜法', '系列'],
+            replies: [
+                '这是我的《高健魁的一百种喜法》系列！今天解锁的是误当杀猪菜篇！',
+                '我的一百种喜法，就是一百种离谱的遭遇！今天这个杀猪菜是最离谱的一个！',
+                '后续我还会有更多离谱的喜法！敬请期待！'
+            ]
+        },
+        {
+            keywords: ['哈哈', '笑死', '搞笑'],
+            replies: [
+                '你还笑！我都要被做成杀猪菜了！你有没有同情心啊！',
+                '别笑了别笑了！快救救我！不对，你就是那个做菜的！',
+                '笑死？等下你吃的时候别香死！'
+            ]
+        },
+        {
+            keywords: ['傻逼', '操', '草', '妈的'],
+            replies: [
+                '别骂人啊！我都要被做成杀猪菜了，你还骂我！',
+                '怎么还急眼了？不就是把我做成杀猪菜吗？',
+                '文明点文明点！吃饭呢！别骂骂咧咧的！'
+            ]
+        }
+    ];
+
+    // 匹配关键词
+    for(let item of replyMap) {
+        for(let keyword of item.keywords) {
+            if(userInput.includes(keyword)) {
+                return item.replies[Math.floor(Math.random() * item.replies.length)];
+            }
+        }
+    }
+
+    // 默认回复
+    const defaultReplies = [
+        '哈哈，你说的这个有点意思！不过先别聊了，快继续做杀猪菜啊！',
+        '你说的对！不过我现在更关心我会不会被吃光！',
+        '有什么事等我被吃完再说！不对，等游戏通关再说！',
+        '你可真会说！快继续操作吧！别让我在锅里等太久！',
+        '这个话题我们等下聊！先把我这锅杀猪菜做好！'
+    ];
+    return defaultReplies[Math.floor(Math.random() * defaultReplies.length)];
+}
+
+// 发送消息
+function sendMsg() {
+    const content = aiInput.value.trim();
+    if(!content) return;
+    // 添加用户消息
+    addAIMsg('user', content);
+    // 清空输入框
+    aiInput.value = '';
+    // 清除无操作计时器
+    clearNoActionTimer();
+    // AI回复延迟，模拟思考
+    setTimeout(() => {
+        const reply = getAIReply(content);
+        addAIMsg('ai', reply);
+        resetNoActionTimer();
+    }, 600);
+}
+
+// 发送按钮点击
+sendBtn.onclick = sendMsg;
+// 回车发送
+aiInput.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter') {
+        sendMsg();
+    }
+});
+
+// 页面加载完成初始化
+window.onload = () => {
+    resetNoActionTimer();
+    // 兼容手机端键盘弹出
+    aiInput.addEventListener('focus', () => {
+        setTimeout(() => {
+            document.querySelector('.game-main').scrollTop = 0;
+        }, 300);
+    });
+};
+</script>
+</body>
+</html>

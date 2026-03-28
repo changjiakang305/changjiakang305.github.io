@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>高健魁的一百种屎法之误当杀猪菜</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        body {
+            font-family: "Microsoft YaHei", sans-serif;
+            background: linear-gradient(to bottom, #fff8e6, #ffebcc);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px 10px;
+            touch-action: none;
+        }
+        /* 超大主标题专属样式 */
+        .main-title {
+            width: 100%;
+            max-width: 600px;
+            font-size: clamp(22px, 5.5vw, 40px);
+            font-weight: 900;
+            color: #ff0000;
+            text-align: center;
+            text-shadow: 3px 3px 0 #000000, 
+                        -3px -3px 0 #000000, 
+                        3px -3px 0 #000000, 
+                        -3px 3px 0 #000000;
+            line-height: 1.3;
+            margin-bottom: 15px;
+            word-break: keep-all;
+        }
+        /* 通用场景容器 */
+        .scene {
+            width: 100%;
+            max-width: 550px;
+            background: white;
+            border-radius: 16px;
+            padding: 25px 20px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            min-height: 80vh;
+        }
+        .scene.active {
+            display: flex;
+        }
+        h2 {
+            color: #d95319;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+        .step-tip {
+            color: #666;
+            font-size: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #f0f0f0;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, #ff9500, #ff3d00);
+            transition: width 0.3s ease;
+        }
+        .game-area {
+            width: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .role-display {
+            font-size: 80px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            width: 100%;
+        }
+        .game-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            background: #ff7b29;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            min-width: 120px;
+        }
+        .game-btn:active {
+            transform: scale(0.95);
+            background: #e66a1e;
+        }
+        .game-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .next-btn {
+            width: 100%;
+            padding: 15px 0;
+            font-size: 18px;
+            background: #c82f2f;
+            margin-top: 10px;
+        }
+        .next-btn:active {
+            background: #a82424;
+        }
+        /* 开场场景 */
+        #startScene .game-area {
+            justify-content: space-between;
+        }
+        .intro-text {
+            text-align: center;
+            color: #333;
+            line-height: 1.6;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        .food-show {
+            font-size: 100px;
+            margin: 20px 0;
+        }
+        /* 杀猪场景专属 */
+        .operate-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            width: 100%;
+        }
+        .step-box {
+            width: 45%;
+            min-width: 140px;
+            background: #fff3e6;
+            border-radius: 10px;
+            padding: 15px 10px;
+            text-align: center;
+        }
+        .step-box h3 {
+            font-size: 16px;
+            color: #d95319;
+            margin-bottom: 10px;
+        }
+        .step-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+        .step-progress {
+            height: 8px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .step-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: #ff7b29;
+            transition: width 0.2s ease;
+        }
+        /* 烹饪场景专属 */
+        .cook-area {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        .pot-display {
+            font-size: 100px;
+            position: relative;
+        }
+        .pot-animation {
+            animation: cook 0.5s infinite alternate;
+        }
+        @keyframes cook {
+            from { transform: rotate(-2deg); }
+            to { transform: rotate(2deg); }
+        }
+        .food-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            width: 100%;
+        }
+        .food-item {
+            background: #fff3e6;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 30px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .food-item:active {
+            transform: scale(0.9);
+        }
+        .food-item.used {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        .cook-tip {
+            color: #666;
+            font-size: 14px;
+            text-align: center;
+        }
+        /* 吃菜场景专属 */
+        .table-area {
+            width: 100%;
+            background: #f5deb3;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        .dish-display {
+            font-size: 80px;
+        }
+        .guest-area {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+        }
+        .guest {
+            text-align: center;
+        }
+        .guest-avatar {
+            font-size: 50px;
+        }
+        .guest-mood {
+            font-size: 14px;
+            color: #333;
+            margin-top: 5px;
+        }
+        .eat-btn {
+            font-size: 20px;
+            padding: 15px 30px;
+            border-radius: 50px;
+            background: #c82f2f;
+        }
+        .eat-btn:active {
+            background: #a82424;
+        }
+        .satisfaction-bar {
+            width: 100%;
+            height: 15px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .satisfaction-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, #4caf50, #8bc34a);
+            transition: width 0.3s ease;
+        }
+        /* 通关场景 */
+        .end-title {
+            font-size: 32px;
+            color: #c82f2f;
+            margin-bottom: 20px;
+        }
+        .end-emoji {
+            font-size: 120px;
+            margin: 20px 0;
+        }
+        .end-text {
+            text-align: center;
+            font-size: 18px;
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        /* 小屏适配 */
+        @media (max-width: 380px) {
+            .main-title {
+                font-size: clamp(18px, 5vw, 24px);
+                text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
+            }
+            h2 { font-size: 20px; }
+            .role-display { font-size: 60px; }
+            .game-btn { min-width: 100px; padding: 10px 15px; font-size: 14px; }
+            .step-box { width: 48%; min-width: 120px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 超大固定主标题 -->
+    <h1 class="main-title">高健魁的一百种喜法之误当杀猪菜！！！</h1>
+
+    <!-- 开场场景 -->
+    <div id="startScene" class="scene active">
+        <h2>剧情开场</h2>
+        <div class="game-area">
+            <div class="intro-text">
+                倒霉的高健魁不小心误闯农家院<br>
+                被当成了刘羿程家里的野猪，要做成地道米脂杀猪菜！<br>
+                你将完整经历这场离谱的“杀猪菜全流程”<br>
+                🏠 杀猪备料 → 👨‍🍳 下锅烹饪 → 🍻 端上餐桌
+            </div>
+            <div class="food-show">🐷</div>
+            <button id="startBtn" class="game-btn next-btn">开始剧情</button>
+        </div>
+    </div>
+
+    <!-- 场景1：杀猪备料 -->
+    <div id="killScene" class="scene">
+        <h2>第一步：杀健魁备料</h2>
+        <div class="step-tip">完成以下步骤，备好新鲜食材，才能做出地道的杀猪菜！</div>
+        <div class="progress-bar">
+            <div id="killProgress" class="progress-fill"></div>
+        </div>
+        <div class="game-area">
+            <div class="role-display" id="pigDisplay">🐖</div>
+            <div class="operate-area">
+                <div class="step-box">
+                    <h3>清洗生猪</h3>
+                    <div class="step-icon">💦</div>
+                    <div class="step-progress">
+                        <div id="washProgress" class="step-progress-fill"></div>
+                    </div>
+                    <button id="washBtn" class="game-btn" style="margin-top:10px; min-width:100px;">点击清洗</button>
+                </div>
+                <div class="step-box">
+                    <h3>脱毛处理</h3>
+                    <div class="step-icon">✂️</div>
+                    <div class="step-progress">
+                        <div id="hairProgress" class="step-progress-fill"></div>
+                    </div>
+                    <button id="hairBtn" class="game-btn" style="margin-top:10px; min-width:100px;" disabled>点击脱毛</button>
+                </div>
+                <div class="step-box">
+                    <h3>分割猪肉</h3>
+                    <div class="step-icon">🔪</div>
+                    <div class="step-progress">
+                        <div id="cutProgress" class="step-progress-fill"></div>
+                    </div>
+                    <button id="cutBtn" class="game-btn" style="margin-top:10px; min-width:100px;" disabled>点击分割</button>
+                </div>
+                <div class="step-box">
+                    <h3>配菜准备</h3>
+                    <div class="step-icon">💩</div>
+                    <div class="step-progress">
+                        <div id="vegeProgress" class="step-progress-fill"></div>
+                    </div>
+                    <button id="vegeBtn" class="game-btn" style="margin-top:10px; min-width:100px;" disabled>准备配菜</button>
+                </div>
+            </div>
+        </div>
+        <button id="toCookBtn" class="game-btn next-btn" disabled>下一步：下锅烹饪</button>
+    </div>
+
+    <!-- 场景2：烹饪制作 -->
+    <div id="cookScene" class="scene">
+        <h2>第二步：烹饪杀猪菜</h2>
+        <div class="step-tip">按顺序把健魁下锅，翻炒炖煮，做出屎味十足的杀猪菜！</div>
+        <div class="progress-bar">
+            <div id="cookProgress" class="progress-fill"></div>
+        </div>
+        <div class="game-area">
+            <div class="cook-area">
+                <div class="pot-display" id="potDisplay">🍲</div>
+                <p class="cook-tip" id="cookTip">先点击食材，把主料下锅</p>
+                <div class="food-items">
+                    <div class="food-item" id="food1" data-step="1">🥩</div>
+                    <div class="food-item" id="food2" data-step="2">🥬</div>
+                    <div class="food-item" id="food3" data-step="3">🧄</div>
+                    <div class="food-item" id="food4" data-step="4">🌶️</div>
+                    <div class="food-item" id="food5" data-step="5">🫘</div>
+                </div>
+                <div class="btn-group">
+                    <button id="stirBtn" class="game-btn" disabled>点击翻炒</button>
+                    <button id="cookBtn" class="game-btn" disabled>开始炖煮</button>
+                </div>
+            </div>
+        </div>
+        <button id="toEatBtn" class="game-btn next-btn" disabled>下一步：端上餐桌</button>
+    </div>
+
+    <!-- 场景3：开吃体验 -->
+    <div id="eatScene" class="scene">
+        <h2>第三步：全家开吃！</h2>
+        <div class="step-tip">点击夹菜，喂给家人们吃，看看大家的满意度吧！</div>
+        <div class="satisfaction-bar">
+            <div id="satisfactionFill" class="satisfaction-fill"></div>
+        </div>
+        <p style="margin:10px 0; color:#333;">全家满意度：<span id="satisfactionNum">0</span>%</p>
+        <div class="game-area">
+            <div class="table-area">
+                <div class="dish-display" id="dishDisplay">🍲</div>
+                <div class="guest-area">
+                    <div class="guest">
+                        <div class="guest-avatar">👨</div>
+                        <p class="guest-mood" id="guest1">等着吃健魁野猪呢！</p>
+                    </div>
+                    <div class="guest">
+                        <div class="guest-avatar">👩</div>
+                        <p class="guest-mood" id="guest2">闻着好臭啊</p>
+                    </div>
+                    <div class="guest">
+                        <div class="guest-avatar">👦</div>
+                        <p class="guest-mood" id="guest3">大肠是不是没洗干净！</p>
+                    </div>
+                    <div class="guest">
+                        <div class="guest-avatar">👧</div>
+                        <p class="guest-mood" id="guest4">倒了喂狗吧！</p>
+                    </div>
+                </div>
+            </div>
+            <button id="eatBtn" class="game-btn eat-btn">🥢 点击夹菜</button>
+        </div>
+        <button id="toEndBtn" class="game-btn next-btn" disabled>完成！查看结局</button>
+    </div>
+
+    <!-- 结局场景 -->
+    <div id="endScene" class="scene">
+        <div class="end-title">喜提结局！</div>
+        <div class="end-emoji">🍻</div>
+        <div class="end-text">
+            恭喜你！成功完成了<br>
+            《高健魁的一百种喜法之误当杀猪菜》<br>
+            高健魁成功变成了一锅地道的东北杀猪菜<br>
+            全家吃得超满足，喜提年度最佳硬菜！
+        </div>
+        <div class="btn-group">
+            <button id="restartBtn" class="game-btn next-btn">再来一次！重玩剧情</button>
+        </div>
+    </div>
+
+    <script>
+        // 获取所有场景和元素
+        const scenes = document.querySelectorAll('.scene');
+        const startBtn = document.getElementById('startBtn');
+        // 杀猪场景元素
+        const washBtn = document.getElementById('washBtn');
+        const hairBtn = document.getElementById('hairBtn');
+        const cutBtn = document.getElementById('cutBtn');
+        const vegeBtn = document.getElementById('vegeBtn');
+        const washProgress = document.getElementById('washProgress');
+        const hairProgress = document.getElementById('hairProgress');
+        const cutProgress = document.getElementById('cutProgress');
+        const vegeProgress = document.getElementById('vegeProgress');
+        const killProgress = document.getElementById('killProgress');
+        const pigDisplay = document.getElementById('pigDisplay');
+        const toCookBtn = document.getElementById('toCookBtn');
+        // 烹饪场景元素
+        const foodItems = document.querySelectorAll('.food-item');
+        const stirBtn = document.getElementById('stirBtn');
+        const cookBtn = document.getElementById('cookBtn');
+        const potDisplay = document.getElementById('potDisplay');
+        const cookTip = document.getElementById('cookTip');
+        const cookProgress = document.getElementById('cookProgress');
+        const toEatBtn = document.getElementById('toEatBtn');
+        // 吃菜场景元素
+        const eatBtn = document.getElementById('eatBtn');
+        const satisfactionFill = document.getElementById('satisfactionFill');
+        const satisfactionNum = document.getElementById('satisfactionNum');
+        const guestTexts = [
+            document.getElementById('guest1'),
+            document.getElementById('guest2'),
+            document.getElementById('guest3'),
+            document.getElementById('guest4')
+        ];
+        const dishDisplay = document.getElementById('dishDisplay');
+        const toEndBtn = document.getElementById('toEndBtn');
+        // 结局场景元素
+        const restartBtn = document.getElementById('restartBtn');
+
+        // 场景切换函数
+        function switchScene(sceneId) {
+            scenes.forEach(scene => scene.classList.remove('active'));
+            document.getElementById(sceneId).classList.add('active');
+        }
+
+        // 开场按钮
+        startBtn.addEventListener('click', () => {
+            switchScene('killScene');
+        });
+
+        // ========== 杀猪场景逻辑 ==========
+        let washCount = 0;
+        let hairCount = 0;
+        let cutCount = 0;
+        let vegeCount = 0;
+        const maxClick = 5; // 每个步骤需要点击的次数
+
+        // 清洗生猪
+        washBtn.addEventListener('click', () => {
+            washCount++;
+            const progress = (washCount / maxClick) * 100;
+            washProgress.style.width = progress + '%';
+            pigDisplay.style.transform = 'scale(1.1)';
+            setTimeout(() => pigDisplay.style.transform = 'scale(1)', 100);
+            
+            if (washCount >= maxClick) {
+                washBtn.disabled = true;
+                hairBtn.disabled = false;
+                pigDisplay.textContent = '🐷';
+                updateKillProgress();
+            }
+        });
+
+        // 脱毛处理
+        hairBtn.addEventListener('click', () => {
+            hairCount++;
+            const progress = (hairCount / maxClick) * 100;
+            hairProgress.style.width = progress + '%';
+            pigDisplay.style.transform = 'rotate(5deg)';
+            setTimeout(() => pigDisplay.style.transform = 'rotate(0)', 100);
+            
+            if (hairCount >= maxClick) {
+                hairBtn.disabled = true;
+                cutBtn.disabled = false;
+                updateKillProgress();
+            }
+        });
+
+        // 分割猪肉
+        cutBtn.addEventListener('click', () => {
+            cutCount++;
+            const progress = (cutCount / maxClick) * 100;
+            cutProgress.style.width = progress + '%';
+            
+            if (cutCount >= maxClick) {
+                cutBtn.disabled = true;
+                vegeBtn.disabled = false;
+                pigDisplay.textContent = '🥩';
+                updateKillProgress();
+            }
+        });
+
+        // 准备配菜
+        vegeBtn.addEventListener('click', () => {
+            vegeCount++;
+            const progress = (vegeCount / maxClick) * 100;
+            vegeProgress.style.width = progress + '%';
+            
+            if (vegeCount >= maxClick) {
+                vegeBtn.disabled = true;
+                toCookBtn.disabled = false;
+                updateKillProgress();
+            }
+        });
+
+        // 更新总进度
+        function updateKillProgress() {
+            const total = washCount + hairCount + cutCount + vegeCount;
+            const maxTotal = maxClick * 4;
+            const progress = (total / maxTotal) * 100;
+            killProgress.style.width = progress + '%';
+        }
+
+        // 进入烹饪场景
+        toCookBtn.addEventListener('click', () => {
+            switchScene('cookScene');
+        });
+
+        // ========== 烹饪场景逻辑 ==========
+        let currentCookStep = 0;
+        const totalCookStep = 5;
+        let isStirred = false;
+        let isCooked = false;
+
+        // 食材点击事件
+        foodItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const step = parseInt(item.dataset.step);
+                if (step === currentCookStep + 1 && !item.classList.contains('used')) {
+                    item.classList.add('used');
+                    currentCookStep++;
+                    // 下锅动画
+                    potDisplay.classList.add('pot-animation');
+                    setTimeout(() => potDisplay.classList.remove('pot-animation'), 300);
+                    // 更新提示
+                    if (currentCookStep < totalCookStep) {
+                        cookTip.textContent = `不错！继续下一个食材，还差${totalCookStep - currentCookStep}个`;
+                    } else {
+                        cookTip.textContent = '所有食材都下锅啦！快点击翻炒，炒出香味！';
+                        stirBtn.disabled = false;
+                    }
+                    // 更新进度
+                    updateCookProgress();
+                }
+            });
+        });
+
+        // 翻炒按钮
+        stirBtn.addEventListener('click', () => {
+            isStirred = true;
+            potDisplay.classList.add('pot-animation');
+            cookTip.textContent = '翻炒得太到位了！香味都飘出来了，现在可以开始炖煮了！';
+            stirBtn.disabled = true;
+            cookBtn.disabled = false;
+            updateCookProgress();
+        });
+
+        // 炖煮按钮
+        cookBtn.addEventListener('click', () => {
+            if (isCooked) return;
+            isCooked = true;
+            cookBtn.disabled = true;
+            cookTip.textContent = '正在炖煮中...';
+            let cookTime = 0;
+            const cookInterval = setInterval(() => {
+                cookTime += 10;
+                cookProgress.style.width = (50 + cookTime/2) + '%';
+                cookTip.textContent = `炖煮中...${cookTime}%`;
+                if (cookTime >= 100) {
+                    clearInterval(cookInterval);
+                    potDisplay.textContent = '🍲✨';
+                    cookTip.textContent = '炖煮完成！一锅香喷喷的杀猪菜做好啦！';
+                    toEatBtn.disabled = false;
+                }
+            }, 100);
+        });
+
+        // 更新烹饪进度
+        function updateCookProgress() {
+            let progress = (currentCookStep / totalCookStep) * 50;
+            if (isStirred) progress += 10;
+            cookProgress.style.width = progress + '%';
+        }
+
+        // 进入吃菜场景
+        toEatBtn.addEventListener('click', () => {
+            switchScene('eatScene');
+        });
+
+        // ========== 吃菜场景逻辑 ==========
+        let satisfaction = 0;
+        const maxSatisfaction = 100;
+        const guestMoods = [
+            ['等着吃呢！', '太香了！', '好吃到爆！', '再来一碗！'],
+            ['闻着好香啊', '味道绝了！', '太好吃了吧！', '我还要吃！'],
+            ['我要吃两碗！', '太满足了！', '这也太香了！', '我能吃一锅！'],
+            ['快给我夹菜！', '好好吃！', '太合我胃口了！', '再来亿口！']
+        ];
+
+        // 夹菜按钮
+        eatBtn.addEventListener('click', () => {
+            if (satisfaction >= maxSatisfaction) return;
+            // 增加满意度
+            satisfaction += Math.floor(Math.random() * 5) + 3;
+            if (satisfaction > maxSatisfaction) satisfaction = maxSatisfaction;
+            // 更新进度
+            satisfactionFill.style.width = satisfaction + '%';
+            satisfactionNum.textContent = satisfaction;
+            // 动画效果
+            dishDisplay.style.transform = 'scale(1.2)';
+            setTimeout(() => dishDisplay.style.transform = 'scale(1)', 100);
+            // 更新客人心情
+            updateGuestMood();
+            // 检查是否完成
+            if (satisfaction >= maxSatisfaction) {
+                eatBtn.disabled = true;
+                toEndBtn.disabled = false;
+            }
+        });
+
+        // 更新客人心情
+        function updateGuestMood() {
+            guestTexts.forEach((guest, index) => {
+                let moodLevel = 0;
+                if (satisfaction > 25) moodLevel = 1;
+                if (satisfaction > 50) moodLevel = 2;
+                if (satisfaction > 75) moodLevel = 3;
+                guest.textContent = guestMoods[index][moodLevel];
+            });
+        }
+
+        // 进入结局场景
+        toEndBtn.addEventListener('click', () => {
+            switchScene('endScene');
+        });
+
+        // 重新开始游戏
+        restartBtn.addEventListener('click', () => {
+            // 重置所有状态
+            washCount = 0;
+            hairCount = 0;
+            cutCount = 0;
+            vegeCount = 0;
+            currentCookStep = 0;
+            isStirred = false;
+            isCooked = false;
+            satisfaction = 0;
+
+            // 重置所有进度条
+            washProgress.style.width = '0%';
+            hairProgress.style.width = '0%';
+            cutProgress.style.width = '0%';
+            vegeProgress.style.width = '0%';
+            killProgress.style.width = '0%';
+            cookProgress.style.width = '0%';
+            satisfactionFill.style.width = '0%';
+            satisfactionNum.textContent = '0';
+
+            // 重置按钮状态
+            washBtn.disabled = false;
+            hairBtn.disabled = true;
+            cutBtn.disabled = true;
+            vegeBtn.disabled = true;
+            toCookBtn.disabled = true;
+            stirBtn.disabled = true;
+            cookBtn.disabled = true;
+            toEatBtn.disabled = true;
+            eatBtn.disabled = false;
+            toEndBtn.disabled = true;
+
+            // 重置显示内容
+            pigDisplay.textContent = '🐖';
+            potDisplay.textContent = '🍲';
+            dishDisplay.textContent = '🍲';
+            cookTip.textContent = '先点击食材，把主料下锅';
+            foodItems.forEach(item => item.classList.remove('used'));
+            guestTexts.forEach((guest, index) => {
+                guest.textContent = guestMoods[index][0];
+            });
+
+            // 回到开场
+            switchScene('startScene');
+        });
+
+        // 兼容手机触屏事件
+        document.querySelectorAll('.game-btn, .food-item').forEach(element => {
+            element.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                element.click();
+            });
+        });
+    </script>
+</body>
+</html>
